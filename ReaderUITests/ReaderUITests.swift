@@ -105,9 +105,8 @@ final class ReaderUITests: XCTestCase {
         XCTAssertTrue(submitButton.waitForExistence(timeout: 5))
         submitButton.tap()
 
-        let closeButton = app.buttons["Close"]
-        XCTAssertTrue(closeButton.waitForExistence(timeout: 5))
-        closeButton.tap()
+        XCTAssertTrue(targetField.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(element("reader.progress-summary").waitForExistence(timeout: 5))
     }
 
     private func startFreshIfPromptAppears() {
