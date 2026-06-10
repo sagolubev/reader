@@ -1,20 +1,40 @@
 import SwiftUI
 
 struct RSVPDisplayView: View {
-    let word: String
+    let frame: WordFrame
+    let fadeEnabled: Bool
+    let fadeDurationMilliseconds: Int
+
+    @State private var displayOpacity = 1.0
 
     private let displayFontSize: CGFloat = 58
     private let markerColor = Color(red: 0.92, green: 0.12, blue: 0.12)
 
+    init(word: String) {
+        self.init(
+            frame: WordFrame(words: [word], centerOffset: 0),
+            fadeEnabled: true,
+            fadeDurationMilliseconds: ReaderSettings().fadeDurationMilliseconds
+        )
+    }
+
+    init(frame: WordFrame, fadeEnabled: Bool, fadeDurationMilliseconds: Int) {
+        self.frame = frame
+        self.fadeEnabled = fadeEnabled
+        self.fadeDurationMilliseconds = fadeDurationMilliseconds
+    }
+
     var body: some View {
-        let parts = RSVPTextProcessor.splitForDisplay(word)
+        let parts = RSVPTextProcessor.splitForDisplay(currentWord)
+        let before = joinedWords(prefixWords, parts.before)
+        let after = joinedWords(parts.after, suffixWords)
         let orpHalfWidth = displayFontSize * 0.3
 
         ZStack {
             centerMarker
 
             ZStack {
-                Text(parts.before)
+                Text(before)
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .offset(x: -orpHalfWidth)
 
@@ -22,7 +42,7 @@ struct RSVPDisplayView: View {
                     .foregroundStyle(markerColor)
                     .frame(maxWidth: .infinity, alignment: .center)
 
-                Text(parts.after)
+                Text(after)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .offset(x: orpHalfWidth)
             }
@@ -30,12 +50,16 @@ struct RSVPDisplayView: View {
             .foregroundStyle(.white)
             .lineLimit(1)
             .minimumScaleFactor(0.28)
+            .opacity(displayOpacity)
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel(word)
+            .accessibilityLabel(accessibilityText)
             .accessibilityIdentifier("reader.orp-display")
         }
         .frame(maxWidth: .infinity)
         .frame(height: 148)
+        .onChange(of: displayID) {
+            animateDisplayChange()
+        }
     }
 
     private var centerMarker: some View {
@@ -52,6 +76,58 @@ struct RSVPDisplayView: View {
         }
         .padding(.vertical, 10)
         .accessibilityHidden(true)
+    }
+
+    private var currentWord: String {
+        guard frame.words.indices.contains(frame.centerOffset) else {
+            return ""
+        }
+
+        return frame.words[frame.centerOffset]
+    }
+
+    private var prefixWords: String {
+        guard frame.centerOffset > 0 else {
+            return ""
+        }
+
+        return frame.words[..<frame.centerOffset].joined(separator: " ")
+    }
+
+    private var suffixWords: String {
+        let nextIndex = frame.centerOffset + 1
+        guard frame.words.indices.contains(nextIndex) else {
+            return ""
+        }
+
+        return frame.words[nextIndex...].joined(separator: " ")
+    }
+
+    private var accessibilityText: String {
+        let text = frame.words.joined(separator: " ")
+        return text.isEmpty ? currentWord : text
+    }
+
+    private var displayID: String {
+        "\(frame.centerOffset)|\(frame.words.joined(separator: "\u{1F}"))"
+    }
+
+    private func joinedWords(_ lhs: String, _ rhs: String) -> String {
+        [lhs, rhs]
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+    }
+
+    private func animateDisplayChange() {
+        guard fadeEnabled else {
+            displayOpacity = 1
+            return
+        }
+
+        displayOpacity = 0
+        withAnimation(.easeOut(duration: Double(max(0, fadeDurationMilliseconds)) / 1_000)) {
+            displayOpacity = 1
+        }
     }
 }
 

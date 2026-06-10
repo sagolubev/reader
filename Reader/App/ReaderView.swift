@@ -27,7 +27,11 @@ struct ReaderView: View {
 
                 Spacer(minLength: 24)
 
-                RSVPDisplayView(word: session.currentWord)
+                RSVPDisplayView(
+                    frame: session.currentFrame,
+                    fadeEnabled: session.settings.fadeEnabled,
+                    fadeDurationMilliseconds: session.settings.fadeDurationMilliseconds
+                )
                     .accessibilityIdentifier("reader.current-word")
 
                 VStack(spacing: 18) {

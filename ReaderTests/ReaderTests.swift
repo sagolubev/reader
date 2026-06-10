@@ -18,6 +18,17 @@ final class ReaderTests: XCTestCase {
     }
 
     @MainActor
+    func testRSVPDisplayViewCanBeCreatedWithFrameAndFadeSettings() {
+        let frame = WordFrame(words: ["fast", "reading", "now"], centerOffset: 1)
+
+        _ = RSVPDisplayView(
+            frame: frame,
+            fadeEnabled: false,
+            fadeDurationMilliseconds: 0
+        )
+    }
+
+    @MainActor
     func testReaderProgressViewCanBeCreated() {
         _ = ReaderProgressView(progress: 0.25, isSeekingEnabled: true) { _ in }
     }

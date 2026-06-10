@@ -42,7 +42,7 @@
 ## 6. Settings And Controls
 
 - [x] 6.1 Add settings UI for WPM, fade, punctuation, long-word, periodic pause, and frame count
-- [ ] 6.2 Wire settings changes into live playback timing and display
+- [x] 6.2 Wire settings changes into live playback timing and display
 - [ ] 6.3 Add touch controls for back/forward and slower/faster
 - [ ] 6.4 Add hardware keyboard shortcuts for source-compatible actions
 
