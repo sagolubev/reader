@@ -21,6 +21,8 @@ struct SettingsView: View {
                                     in: Double(ReaderSettings.wordsPerMinuteRange.lowerBound)...Double(ReaderSettings.wordsPerMinuteRange.upperBound),
                                     step: Double(ReaderSettings.wordsPerMinuteStep)
                                 )
+                                .accessibilityLabel("Words per minute")
+                                .accessibilityValue("\(settings.wordsPerMinute) words per minute")
                             }
 
                             HStack(spacing: 10) {
@@ -32,6 +34,7 @@ struct SettingsView: View {
                                     .buttonStyle(.bordered)
                                     .controlSize(.small)
                                     .tint(settings.wordsPerMinute == preset ? .red : .white)
+                                    .accessibilityLabel(presetAccessibilityLabel(for: preset))
                                 }
                             }
                             .accessibilityIdentifier("settings.wpm-presets")
@@ -45,6 +48,8 @@ struct SettingsView: View {
                                     in: ReaderSettings.wordLengthWPMMultiplierRange,
                                     step: ReaderSettings.wordLengthWPMMultiplierStep
                                 )
+                                .accessibilityLabel("Long-word pause")
+                                .accessibilityValue("\(Int(settings.wordLengthWPMMultiplier)) percent")
                             }
                         }
 
@@ -80,6 +85,8 @@ struct SettingsView: View {
                                         in: Double(ReaderSettings.fadeDurationRange.lowerBound)...Double(ReaderSettings.fadeDurationRange.upperBound),
                                         step: Double(ReaderSettings.fadeDurationStep)
                                     )
+                                    .accessibilityLabel("Fade duration")
+                                    .accessibilityValue("\(settings.fadeDurationMilliseconds) milliseconds")
                                 }
                             }
                         }
@@ -99,6 +106,8 @@ struct SettingsView: View {
                                         in: ReaderSettings.punctuationPauseMultiplierRange,
                                         step: ReaderSettings.punctuationPauseMultiplierStep
                                     )
+                                    .accessibilityLabel("Punctuation multiplier")
+                                    .accessibilityValue("\(settings.punctuationPauseMultiplier.formatted(.number.precision(.fractionLength(0...1)))) times")
                                 }
                             }
 
@@ -111,6 +120,8 @@ struct SettingsView: View {
                                     in: Double(ReaderSettings.pauseAfterWordsRange.lowerBound)...Double(ReaderSettings.pauseAfterWordsRange.upperBound),
                                     step: Double(ReaderSettings.pauseAfterWordsStep)
                                 )
+                                .accessibilityLabel("Pause interval")
+                                .accessibilityValue(settings.pauseAfterWords == 0 ? "Off" : "\(settings.pauseAfterWords) words")
                             }
 
                             if settings.pauseAfterWords > 0 {
@@ -123,6 +134,8 @@ struct SettingsView: View {
                                         in: Double(ReaderSettings.pauseDurationRange.lowerBound)...Double(ReaderSettings.pauseDurationRange.upperBound),
                                         step: Double(ReaderSettings.pauseDurationStep)
                                     )
+                                    .accessibilityLabel("Pause duration")
+                                    .accessibilityValue("\(settings.pauseDurationMilliseconds) milliseconds")
                                 }
                             }
                         }
@@ -205,6 +218,21 @@ struct SettingsView: View {
                 settings.normalizeForControls()
             }
         )
+    }
+
+    private func presetAccessibilityLabel(for preset: Int) -> String {
+        switch preset {
+        case 200:
+            return "Set 200 words per minute"
+        case 300:
+            return "Set 300 words per minute"
+        case 400:
+            return "Set 400 words per minute"
+        case 500:
+            return "Set 500 words per minute"
+        default:
+            return "Set \(preset) words per minute"
+        }
     }
 }
 

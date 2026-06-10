@@ -66,6 +66,9 @@ struct ReaderView: View {
                     }
                     .font(.footnote.monospacedDigit())
                     .foregroundStyle(.secondary)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("Reading position")
+                    .accessibilityValue("\(session.currentWordIndex + 1) of \(session.words.count) words, \(session.timeRemaining) remaining")
                     .accessibilityIdentifier("reader.progress-summary")
 
                     PlaybackControlsView(

@@ -17,6 +17,8 @@ struct JumpToPositionView: View {
                     Text("\(currentWordIndex + 1) / \(totalWordCount)")
                         .font(.subheadline.monospacedDigit())
                         .foregroundStyle(.secondary)
+                        .accessibilityLabel("Current position")
+                        .accessibilityValue("\(currentWordIndex + 1) of \(totalWordCount) words")
                         .accessibilityIdentifier("jump.position-summary")
 
                     TextField("Word or percent", text: $target)
