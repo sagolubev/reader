@@ -15,8 +15,8 @@
 
 ## 3. Timing And Session State
 
-- [ ] 3.1 Add failing unit tests for reader settings defaults and word timing
-- [ ] 3.2 Implement settings and word timing until timing tests pass
+- [x] 3.1 Add failing unit tests for reader settings defaults and word timing
+- [x] 3.2 Implement settings and word timing until timing tests pass
 - [ ] 3.3 Add failing unit tests for remaining-time formatting and periodic pause checks
 - [ ] 3.4 Implement remaining-time formatting and periodic pause checks
 - [ ] 3.5 Add failing unit tests for load, play, pause, resume, stop, restart, step, seek, and jump state transitions
