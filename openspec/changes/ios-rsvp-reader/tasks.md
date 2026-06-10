@@ -6,8 +6,8 @@
 
 ## 2. RSVP Domain Logic
 
-- [ ] 2.1 Add failing unit tests for text tokenization and empty input
-- [ ] 2.2 Implement text tokenization until tokenization tests pass
+- [x] 2.1 Add failing unit tests for text tokenization and empty input
+- [x] 2.2 Implement text tokenization until tokenization tests pass
 - [ ] 2.3 Add failing unit tests for ORP calculation across Latin, Cyrillic, punctuation, CJK, RTL, and non-letter tokens
 - [ ] 2.4 Implement ORP and word display splitting until ORP tests pass
 - [ ] 2.5 Add failing unit tests for single-word and multi-word frame extraction
