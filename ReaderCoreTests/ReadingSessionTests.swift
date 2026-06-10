@@ -58,6 +58,40 @@ final class ReadingSessionTests: XCTestCase {
         XCTAssertEqual(session.currentWord, "one")
     }
 
+    func testStepForwardAndBackwardByMultipleWordsClampToWordRange() {
+        var session = ReadingSession()
+        session.loadText("zero one two three four five six")
+        session.jump(to: "5")
+
+        session.stepBackward(by: 5)
+        XCTAssertEqual(session.currentWordIndex, 0)
+
+        session.stepForward(by: 5)
+        XCTAssertEqual(session.currentWordIndex, 5)
+
+        session.stepForward(by: 5)
+        XCTAssertEqual(session.currentWordIndex, 6)
+    }
+
+    func testAdjustWordsPerMinuteByTouchStepClampsToSupportedRange() {
+        var session = ReadingSession()
+        session.settings.wordsPerMinute = 300
+
+        session.adjustWordsPerMinute(by: -50)
+        XCTAssertEqual(session.settings.wordsPerMinute, 250)
+
+        session.adjustWordsPerMinute(by: 50)
+        XCTAssertEqual(session.settings.wordsPerMinute, 300)
+
+        session.settings.wordsPerMinute = 975
+        session.adjustWordsPerMinute(by: 50)
+        XCTAssertEqual(session.settings.wordsPerMinute, 1_000)
+
+        session.settings.wordsPerMinute = 75
+        session.adjustWordsPerMinute(by: -50)
+        XCTAssertEqual(session.settings.wordsPerMinute, 50)
+    }
+
     func testSeekByPercentageUpdatesProgress() {
         var session = ReadingSession()
         session.loadText("zero one two three")

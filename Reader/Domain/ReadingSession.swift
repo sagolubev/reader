@@ -83,16 +83,21 @@ struct ReadingSession: Equatable {
         play()
     }
 
-    mutating func stepForward() {
+    mutating func stepForward(by count: Int = 1) {
         guard !words.isEmpty else {
             return
         }
 
-        currentWordIndex = min(words.count - 1, currentWordIndex + 1)
+        currentWordIndex = min(words.count - 1, currentWordIndex + max(0, count))
     }
 
-    mutating func stepBackward() {
-        currentWordIndex = max(0, currentWordIndex - 1)
+    mutating func stepBackward(by count: Int = 1) {
+        currentWordIndex = max(0, currentWordIndex - max(0, count))
+    }
+
+    mutating func adjustWordsPerMinute(by delta: Int) {
+        settings.wordsPerMinute += delta
+        settings.normalizeForControls()
     }
 
     mutating func advanceOneWord() {

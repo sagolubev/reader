@@ -60,6 +60,15 @@ struct ReaderView: View {
                         onStop: stop,
                         onStepForward: stepForward
                     )
+
+                    ReaderTouchControlsView(
+                        canStep: !session.words.isEmpty,
+                        wordsPerMinute: session.settings.wordsPerMinute,
+                        onStepBackward: stepBackwardByTouch,
+                        onSlower: slowDown,
+                        onFaster: speedUp,
+                        onStepForward: stepForwardByTouch
+                    )
                 }
 
                 Spacer(minLength: 24)
@@ -150,6 +159,26 @@ struct ReaderView: View {
     }
 
     @MainActor
+    private func stepBackwardByTouch() {
+        session.stepBackward(by: Self.touchWordStep)
+    }
+
+    @MainActor
+    private func stepForwardByTouch() {
+        session.stepForward(by: Self.touchWordStep)
+    }
+
+    @MainActor
+    private func slowDown() {
+        session.adjustWordsPerMinute(by: -Self.touchWordsPerMinuteStep)
+    }
+
+    @MainActor
+    private func speedUp() {
+        session.adjustWordsPerMinute(by: Self.touchWordsPerMinuteStep)
+    }
+
+    @MainActor
     private func runPlaybackLoop() async {
         guard session.playbackState == .playing else {
             return
@@ -215,6 +244,9 @@ private enum ReaderSheet: Identifiable {
 }
 
 private extension ReaderView {
+    static let touchWordStep = 5
+    static let touchWordsPerMinuteStep = 50
+
     static let defaultText = """
     Rapid serial visual presentation keeps one word in focus at a time. Load text, set the speed, and read without moving your eyes across the page.
     """

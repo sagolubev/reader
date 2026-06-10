@@ -47,6 +47,18 @@ final class ReaderTests: XCTestCase {
     }
 
     @MainActor
+    func testReaderTouchControlsViewCanBeCreated() {
+        _ = ReaderTouchControlsView(
+            canStep: true,
+            wordsPerMinute: 300,
+            onStepBackward: {},
+            onSlower: {},
+            onFaster: {},
+            onStepForward: {}
+        )
+    }
+
+    @MainActor
     func testReaderHeaderViewCanBeCreated() {
         _ = ReaderHeaderView(
             wordCount: 12,

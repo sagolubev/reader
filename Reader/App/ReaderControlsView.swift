@@ -111,9 +111,69 @@ struct PlaybackControlsView: View {
     }
 }
 
+struct ReaderTouchControlsView: View {
+    let canStep: Bool
+    let wordsPerMinute: Int
+    let onStepBackward: () -> Void
+    let onSlower: () -> Void
+    let onFaster: () -> Void
+    let onStepForward: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            ControlIconButton(
+                systemName: "gobackward.5",
+                accessibilityLabel: "Back 5 words",
+                accessibilityIdentifier: "reader.touch-back",
+                size: 40,
+                isEnabled: canStep,
+                action: onStepBackward
+            )
+
+            ControlIconButton(
+                systemName: "minus",
+                accessibilityLabel: "Slower",
+                accessibilityIdentifier: "reader.touch-slower",
+                size: 40,
+                isEnabled: wordsPerMinute > ReaderSettings.wordsPerMinuteRange.lowerBound,
+                action: onSlower
+            )
+
+            Text("\(wordsPerMinute) WPM")
+                .font(.caption.monospacedDigit().weight(.semibold))
+                .foregroundStyle(.white)
+                .frame(width: 82, height: 40)
+                .accessibilityLabel("Reading speed")
+                .accessibilityValue("\(wordsPerMinute) words per minute")
+                .accessibilityIdentifier("reader.touch-wpm")
+
+            ControlIconButton(
+                systemName: "plus",
+                accessibilityLabel: "Faster",
+                accessibilityIdentifier: "reader.touch-faster",
+                size: 40,
+                isEnabled: wordsPerMinute < ReaderSettings.wordsPerMinuteRange.upperBound,
+                action: onFaster
+            )
+
+            ControlIconButton(
+                systemName: "goforward.5",
+                accessibilityLabel: "Forward 5 words",
+                accessibilityIdentifier: "reader.touch-forward",
+                size: 40,
+                isEnabled: canStep,
+                action: onStepForward
+            )
+        }
+        .frame(maxWidth: .infinity)
+        .accessibilityIdentifier("reader.touch-controls")
+    }
+}
+
 private struct ControlIconButton: View {
     let systemName: String
     let accessibilityLabel: String
+    var accessibilityIdentifier: String?
     var size: CGFloat = 46
     var isProminent = false
     var isEnabled = true
@@ -135,6 +195,18 @@ private struct ControlIconButton: View {
         .opacity(isEnabled ? 1 : 0.35)
         .disabled(!isEnabled)
         .accessibilityLabel(accessibilityLabel)
+        .optionalAccessibilityIdentifier(accessibilityIdentifier)
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func optionalAccessibilityIdentifier(_ identifier: String?) -> some View {
+        if let identifier {
+            accessibilityIdentifier(identifier)
+        } else {
+            self
+        }
     }
 }
 
@@ -150,6 +222,14 @@ private struct ControlIconButton: View {
                 onStepBackward: {},
                 onPlayPause: {},
                 onStop: {},
+                onStepForward: {}
+            )
+            ReaderTouchControlsView(
+                canStep: true,
+                wordsPerMinute: 300,
+                onStepBackward: {},
+                onSlower: {},
+                onFaster: {},
                 onStepForward: {}
             )
         }
