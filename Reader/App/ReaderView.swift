@@ -161,6 +161,16 @@ private extension ReaderView {
     """
 }
 
-#Preview {
+#Preview("Default") {
     ReaderView()
+}
+
+#Preview("Small Phone", traits: .fixedLayout(width: 375, height: 667)) {
+    ReaderView(initialText: "Short words keep the focal point stable on compact screens.")
+}
+
+#Preview("Large Phone", traits: .fixedLayout(width: 430, height: 932)) {
+    ReaderView(initialText: """
+    Longer sample text keeps the reader surface populated while checking spacing, centered ORP alignment, progress, and controls on a large phone.
+    """)
 }
