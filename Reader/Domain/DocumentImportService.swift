@@ -30,7 +30,7 @@ struct DocumentImportService {
     var epubExtractor: EPUBTextExtracting
 
     init(
-        pdfExtractor: PDFTextExtracting = UnavailablePDFTextExtractor(),
+        pdfExtractor: PDFTextExtracting = PDFKitTextExtractor(),
         epubExtractor: EPUBTextExtracting = UnavailableEPUBTextExtractor()
     ) {
         self.pdfExtractor = pdfExtractor
@@ -76,12 +76,6 @@ struct DocumentImportService {
     private func normalizedFileType(for url: URL) -> String {
         let fileExtension = url.pathExtension.lowercased()
         return fileExtension.isEmpty ? "unknown" : fileExtension
-    }
-}
-
-private struct UnavailablePDFTextExtractor: PDFTextExtracting {
-    func extractText(from url: URL) throws -> String {
-        throw DocumentImportError.extractorUnavailable("pdf")
     }
 }
 
