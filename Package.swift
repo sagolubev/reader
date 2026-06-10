@@ -5,7 +5,8 @@ import PackageDescription
 let package = Package(
     name: "ReaderCore",
     platforms: [
-        .iOS(.v17)
+        .iOS(.v17),
+        .macOS(.v14)
     ],
     products: [
         .library(name: "ReaderCore", targets: ["ReaderCore"])

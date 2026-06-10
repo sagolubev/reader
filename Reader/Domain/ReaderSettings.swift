@@ -1,4 +1,4 @@
-struct ReaderSettings: Equatable {
+struct ReaderSettings: Codable, Equatable {
     static let wordsPerMinuteRange = 50...1_000
     static let wordsPerMinuteStep = 25
     static let fadeDurationRange = 50...300
