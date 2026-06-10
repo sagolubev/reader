@@ -170,6 +170,43 @@ struct ReaderTouchControlsView: View {
     }
 }
 
+struct ReaderKeyboardShortcutsView: View {
+    let onPlayPause: () -> Void
+    let onExit: () -> Void
+    let onSpeedUp: () -> Void
+    let onSlowDown: () -> Void
+    let onStepBackward: () -> Void
+    let onStepForward: () -> Void
+    let onJump: () -> Void
+    let onSave: () -> Void
+
+    var body: some View {
+        Group {
+            shortcutButton("Play or pause", shortcut: .space, modifiers: [], action: onPlayPause)
+            shortcutButton("Exit focus mode", shortcut: .escape, modifiers: [], action: onExit)
+            shortcutButton("Faster", shortcut: .upArrow, modifiers: [], action: onSpeedUp)
+            shortcutButton("Slower", shortcut: .downArrow, modifiers: [], action: onSlowDown)
+            shortcutButton("Previous word", shortcut: .leftArrow, modifiers: [], action: onStepBackward)
+            shortcutButton("Next word", shortcut: .rightArrow, modifiers: [], action: onStepForward)
+            shortcutButton("Jump", shortcut: "g", modifiers: [], action: onJump)
+            shortcutButton("Save", shortcut: "s", modifiers: .command, action: onSave)
+        }
+        .frame(width: 0, height: 0)
+        .opacity(0)
+        .accessibilityHidden(true)
+    }
+
+    private func shortcutButton(
+        _ title: String,
+        shortcut: KeyEquivalent,
+        modifiers: EventModifiers,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(title, action: action)
+            .keyboardShortcut(shortcut, modifiers: modifiers)
+    }
+}
+
 private struct ControlIconButton: View {
     let systemName: String
     let accessibilityLabel: String

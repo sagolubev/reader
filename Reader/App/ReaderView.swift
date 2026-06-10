@@ -75,6 +75,17 @@ struct ReaderView: View {
             }
             .padding(.horizontal, 24)
             .padding(.vertical, 28)
+
+            ReaderKeyboardShortcutsView(
+                onPlayPause: playPause,
+                onExit: exitFocusMode,
+                onSpeedUp: speedUpByKeyboard,
+                onSlowDown: slowDownByKeyboard,
+                onStepBackward: stepBackwardByKeyboard,
+                onStepForward: stepForward,
+                onJump: showJumpShortcut,
+                onSave: saveShortcut
+            )
         }
         .task(id: playbackLoopID) {
             await runPlaybackLoop()
@@ -179,6 +190,29 @@ struct ReaderView: View {
     }
 
     @MainActor
+    private func stepBackwardByKeyboard() {
+        session.stepBackward(by: Self.keyboardBackwardWordStep)
+    }
+
+    @MainActor
+    private func slowDownByKeyboard() {
+        session.adjustWordsPerMinute(by: -ReaderSettings.wordsPerMinuteStep)
+    }
+
+    @MainActor
+    private func speedUpByKeyboard() {
+        session.adjustWordsPerMinute(by: ReaderSettings.wordsPerMinuteStep)
+    }
+
+    @MainActor
+    private func showJumpShortcut() {
+    }
+
+    @MainActor
+    private func saveShortcut() {
+    }
+
+    @MainActor
     private func runPlaybackLoop() async {
         guard session.playbackState == .playing else {
             return
@@ -246,6 +280,7 @@ private enum ReaderSheet: Identifiable {
 private extension ReaderView {
     static let touchWordStep = 5
     static let touchWordsPerMinuteStep = 50
+    static let keyboardBackwardWordStep = 2
 
     static let defaultText = """
     Rapid serial visual presentation keeps one word in focus at a time. Load text, set the speed, and read without moving your eyes across the page.

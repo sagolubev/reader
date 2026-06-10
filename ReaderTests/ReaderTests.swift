@@ -59,6 +59,20 @@ final class ReaderTests: XCTestCase {
     }
 
     @MainActor
+    func testReaderKeyboardShortcutsViewCanBeCreated() {
+        _ = ReaderKeyboardShortcutsView(
+            onPlayPause: {},
+            onExit: {},
+            onSpeedUp: {},
+            onSlowDown: {},
+            onStepBackward: {},
+            onStepForward: {},
+            onJump: {},
+            onSave: {}
+        )
+    }
+
+    @MainActor
     func testReaderHeaderViewCanBeCreated() {
         _ = ReaderHeaderView(
             wordCount: 12,
