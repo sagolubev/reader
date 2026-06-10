@@ -5,6 +5,7 @@ struct ReaderView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     private let persistence: ReaderPersistenceActions?
+    private let resetSavedSessionOnLaunch: Bool
 
     @State private var session: ReadingSession
     @State private var playbackLoopID = 0
@@ -15,8 +16,11 @@ struct ReaderView: View {
 
     init(
         initialText: String = ReaderView.defaultText,
-        sessionStore: (any SessionPersisting)? = nil
+        sessionStore: (any SessionPersisting)? = nil,
+        resetSavedSessionOnLaunch: Bool = false
     ) {
+        self.resetSavedSessionOnLaunch = resetSavedSessionOnLaunch
+
         var session = ReadingSession()
         session.loadText(initialText)
         _session = State(initialValue: session)
@@ -179,6 +183,11 @@ struct ReaderView: View {
         didCheckSavedSession = true
 
         do {
+            if resetSavedSessionOnLaunch {
+                try persistence.startFresh()
+                return
+            }
+
             if let snapshot = try persistence.loadSavedSession() {
                 presentedSheet = .resumeSession(snapshot)
             }
