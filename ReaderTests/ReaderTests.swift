@@ -77,9 +77,26 @@ final class ReaderTests: XCTestCase {
         _ = ReaderHeaderView(
             wordCount: 12,
             isFocusMode: false,
+            canSave: true,
             onLoadContent: {},
+            onSave: {},
             onOpenSettings: {},
             onExitFocusMode: {}
+        )
+    }
+
+    @MainActor
+    func testResumeSessionViewCanBeCreated() {
+        _ = ResumeSessionView(
+            snapshot: SavedSessionSnapshot(
+                text: "one two three",
+                currentWordIndex: 1,
+                totalWordCount: 3,
+                settings: ReaderSettings(),
+                savedAt: Date(timeIntervalSince1970: 123)
+            ),
+            onResume: {},
+            onStartFresh: {}
         )
     }
 

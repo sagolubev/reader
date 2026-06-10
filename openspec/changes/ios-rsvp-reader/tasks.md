@@ -50,7 +50,7 @@
 
 - [x] 7.1 Add failing tests for saving, loading, clearing, and restoring settings
 - [x] 7.2 Implement the SwiftData saved session model and session store
-- [ ] 7.3 Add save action and resume/start-fresh prompt
+- [x] 7.3 Add save action and resume/start-fresh prompt
 - [ ] 7.4 Add jump sheet and tappable progress seek behavior
 
 ## 8. Accessibility, Lifecycle, And Verification

@@ -190,6 +190,7 @@ struct ReaderKeyboardShortcutsView: View {
             shortcutButton("Next word", shortcut: .rightArrow, modifiers: [], action: onStepForward)
             shortcutButton("Jump", shortcut: "g", modifiers: [], action: onJump)
             shortcutButton("Save", shortcut: "s", modifiers: .command, action: onSave)
+            shortcutButton("Save", shortcut: "s", modifiers: .control, action: onSave)
         }
         .frame(width: 0, height: 0)
         .opacity(0)

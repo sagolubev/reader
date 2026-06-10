@@ -1,15 +1,28 @@
 import SwiftUI
 
 struct ReaderView: View {
+    private let persistence: ReaderPersistenceActions?
+
     @State private var session: ReadingSession
     @State private var playbackLoopID = 0
     @State private var isFocusMode = false
     @State private var presentedSheet: ReaderSheet?
+    @State private var didCheckSavedSession = false
+    @State private var persistenceErrorMessage: String?
 
-    init(initialText: String = ReaderView.defaultText) {
+    init(
+        initialText: String = ReaderView.defaultText,
+        sessionStore: (any SessionPersisting)? = nil
+    ) {
         var session = ReadingSession()
         session.loadText(initialText)
         _session = State(initialValue: session)
+
+        if let sessionStore {
+            persistence = ReaderPersistenceActions(store: sessionStore)
+        } else {
+            persistence = nil
+        }
     }
 
     var body: some View {
@@ -20,7 +33,9 @@ struct ReaderView: View {
                 ReaderHeaderView(
                     wordCount: session.words.count,
                     isFocusMode: isFocusMode,
+                    canSave: !session.words.isEmpty,
                     onLoadContent: showLoadContent,
+                    onSave: saveSession,
                     onOpenSettings: showSettings,
                     onExitFocusMode: exitFocusMode
                 )
@@ -98,7 +113,21 @@ struct ReaderView: View {
                 }
             case .settings:
                 SettingsView(settings: settingsBinding)
+            case .resumeSession(let snapshot):
+                ResumeSessionView(
+                    snapshot: snapshot,
+                    onResume: { resumeSavedSession(snapshot) },
+                    onStartFresh: startFresh
+                )
             }
+        }
+        .task {
+            showSavedSessionPromptIfNeeded()
+        }
+        .alert("Session Error", isPresented: persistenceErrorIsPresented) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(persistenceErrorMessage ?? "")
         }
     }
 
@@ -110,6 +139,23 @@ struct ReaderView: View {
     @MainActor
     private func showSettings() {
         presentedSheet = .settings
+    }
+
+    @MainActor
+    private func showSavedSessionPromptIfNeeded() {
+        guard !didCheckSavedSession, let persistence else {
+            return
+        }
+
+        didCheckSavedSession = true
+
+        do {
+            if let snapshot = try persistence.loadSavedSession() {
+                presentedSheet = .resumeSession(snapshot)
+            }
+        } catch {
+            persistenceErrorMessage = error.localizedDescription
+        }
     }
 
     @MainActor
@@ -210,6 +256,40 @@ struct ReaderView: View {
 
     @MainActor
     private func saveShortcut() {
+        saveSession()
+    }
+
+    @MainActor
+    private func saveSession() {
+        guard let persistence else {
+            return
+        }
+
+        do {
+            try persistence.save(session)
+        } catch {
+            persistenceErrorMessage = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func resumeSavedSession(_ snapshot: SavedSessionSnapshot) {
+        persistence?.resume(snapshot, into: &session)
+        isFocusMode = false
+        playbackLoopID += 1
+    }
+
+    @MainActor
+    private func startFresh() {
+        guard let persistence else {
+            return
+        }
+
+        do {
+            try persistence.startFresh()
+        } catch {
+            persistenceErrorMessage = error.localizedDescription
+        }
     }
 
     @MainActor
@@ -261,11 +341,23 @@ struct ReaderView: View {
             }
         )
     }
+
+    private var persistenceErrorIsPresented: Binding<Bool> {
+        Binding(
+            get: { persistenceErrorMessage != nil },
+            set: { isPresented in
+                if !isPresented {
+                    persistenceErrorMessage = nil
+                }
+            }
+        )
+    }
 }
 
 private enum ReaderSheet: Identifiable {
     case loadContent
     case settings
+    case resumeSession(SavedSessionSnapshot)
 
     var id: String {
         switch self {
@@ -273,6 +365,8 @@ private enum ReaderSheet: Identifiable {
             return "load-content"
         case .settings:
             return "settings"
+        case .resumeSession(let snapshot):
+            return "resume-session-\(snapshot.savedAt.timeIntervalSince1970)"
         }
     }
 }

@@ -33,7 +33,7 @@ final class SavedReadingSessionRecord {
 }
 
 @MainActor
-final class SessionStore {
+final class SessionStore: SessionPersisting {
     private let modelContext: ModelContext
     private let retainedContainer: ModelContainer?
     private let encoder = JSONEncoder()

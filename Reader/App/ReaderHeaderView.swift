@@ -3,7 +3,9 @@ import SwiftUI
 struct ReaderHeaderView: View {
     let wordCount: Int
     let isFocusMode: Bool
+    let canSave: Bool
     let onLoadContent: () -> Void
+    let onSave: () -> Void
     let onOpenSettings: () -> Void
     let onExitFocusMode: () -> Void
 
@@ -49,6 +51,14 @@ struct ReaderHeaderView: View {
                     )
 
                     HeaderIconButton(
+                        systemName: "square.and.arrow.down",
+                        accessibilityLabel: "Save session",
+                        accessibilityIdentifier: "reader.save-session",
+                        isEnabled: canSave,
+                        action: onSave
+                    )
+
+                    HeaderIconButton(
                         systemName: "gearshape.fill",
                         accessibilityLabel: "Settings",
                         accessibilityIdentifier: "reader.settings",
@@ -66,6 +76,7 @@ private struct HeaderIconButton: View {
     let systemName: String
     let accessibilityLabel: String
     let accessibilityIdentifier: String
+    var isEnabled = true
     let action: () -> Void
 
     var body: some View {
@@ -81,6 +92,8 @@ private struct HeaderIconButton: View {
             Circle()
                 .fill(Color.white.opacity(0.14))
         )
+        .opacity(isEnabled ? 1 : 0.35)
+        .disabled(!isEnabled)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityIdentifier(accessibilityIdentifier)
     }
@@ -93,14 +106,18 @@ private struct HeaderIconButton: View {
             ReaderHeaderView(
                 wordCount: 120,
                 isFocusMode: false,
+                canSave: true,
                 onLoadContent: {},
+                onSave: {},
                 onOpenSettings: {},
                 onExitFocusMode: {}
             )
             ReaderHeaderView(
                 wordCount: 120,
                 isFocusMode: true,
+                canSave: true,
                 onLoadContent: {},
+                onSave: {},
                 onOpenSettings: {},
                 onExitFocusMode: {}
             )

@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 @main
 struct ReaderApp: App {
@@ -6,5 +7,6 @@ struct ReaderApp: App {
         WindowGroup {
             RootView()
         }
+        .modelContainer(for: SavedReadingSessionRecord.self)
     }
 }
