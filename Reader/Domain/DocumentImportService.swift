@@ -4,6 +4,7 @@ enum DocumentImportError: Error, Equatable, LocalizedError {
     case unsupportedFileType(String)
     case emptyExtractedText
     case extractorUnavailable(String)
+    case epubParseFailed
 
     var errorDescription: String? {
         switch self {
@@ -13,6 +14,8 @@ enum DocumentImportError: Error, Equatable, LocalizedError {
             return "No readable text was found in this document."
         case .extractorUnavailable(let fileType):
             return "\(fileType.uppercased()) import is not available yet."
+        case .epubParseFailed:
+            return "The EPUB file could not be parsed."
         }
     }
 }
@@ -31,7 +34,7 @@ struct DocumentImportService {
 
     init(
         pdfExtractor: PDFTextExtracting = PDFKitTextExtractor(),
-        epubExtractor: EPUBTextExtracting = UnavailableEPUBTextExtractor()
+        epubExtractor: EPUBTextExtracting = EPUBTextExtractor()
     ) {
         self.pdfExtractor = pdfExtractor
         self.epubExtractor = epubExtractor
@@ -76,11 +79,5 @@ struct DocumentImportService {
     private func normalizedFileType(for url: URL) -> String {
         let fileExtension = url.pathExtension.lowercased()
         return fileExtension.isEmpty ? "unknown" : fileExtension
-    }
-}
-
-private struct UnavailableEPUBTextExtractor: EPUBTextExtracting {
-    func extractText(from url: URL) throws -> String {
-        throw DocumentImportError.extractorUnavailable("epub")
     }
 }

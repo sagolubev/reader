@@ -36,7 +36,7 @@
 - [x] 5.2 Implement `DocumentImportService` and normalization
 - [x] 5.3 Implement PDF extraction through PDFKit and an empty-extraction error
 - [x] 5.4 Evaluate EPUB extraction dependency or fallback parser against a fixture
-- [ ] 5.5 Implement EPUB extraction behind `EPUBTextExtractor`
+- [x] 5.5 Implement EPUB extraction behind `EPUBTextExtractor`
 - [ ] 5.6 Add the load content UI with paste text and file importer
 
 ## 6. Settings And Controls
