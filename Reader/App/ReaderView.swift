@@ -75,7 +75,7 @@ struct ReaderView: View {
                         Text(session.timeRemaining)
                     }
                     .font(.footnote.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.72))
                     .accessibilityElement(children: .combine)
                     .accessibilityLabel("Reading position")
                     .accessibilityValue("\(session.currentWordIndex + 1) of \(session.words.count) words, \(session.timeRemaining) remaining")
