@@ -25,7 +25,7 @@
 ## 4. Native Reader UI
 
 - [x] 4.1 Add the main `ReaderView` connected to the domain session
-- [ ] 4.2 Add `RSVPDisplayView` with fixed-center ORP alignment and focus marker
+- [x] 4.2 Add `RSVPDisplayView` with fixed-center ORP alignment and focus marker
 - [ ] 4.3 Add progress and playback controls
 - [ ] 4.4 Add focus mode state and layout behavior
 - [ ] 4.5 Add small and large device previews or simulator screenshot checks

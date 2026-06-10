@@ -18,11 +18,7 @@ struct ReaderView: View {
 
                 Spacer(minLength: 24)
 
-                Text(session.currentWord)
-                    .font(.system(size: 56, weight: .medium, design: .monospaced))
-                    .foregroundStyle(.white)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.35)
+                RSVPDisplayView(word: session.currentWord)
                     .accessibilityIdentifier("reader.current-word")
 
                 Text("\(session.currentWordIndex + 1) / \(session.words.count)")

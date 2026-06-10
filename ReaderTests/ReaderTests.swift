@@ -6,7 +6,13 @@ final class ReaderTests: XCTestCase {
         _ = RootView()
     }
 
+    @MainActor
     func testReaderViewCanBeCreated() {
         _ = ReaderView()
+    }
+
+    @MainActor
+    func testRSVPDisplayViewCanBeCreated() {
+        _ = RSVPDisplayView(word: "reading")
     }
 }
