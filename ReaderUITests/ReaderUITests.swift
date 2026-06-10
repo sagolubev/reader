@@ -5,10 +5,11 @@ final class ReaderUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    func testAppLaunchesToReadyState() {
+    @MainActor
+    func testAppLaunchesToReaderSurface() {
         let app = XCUIApplication()
         app.launch()
 
-        XCTAssertTrue(app.staticTexts["reader.ready"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["reader.current-word"].waitForExistence(timeout: 5))
     }
 }
