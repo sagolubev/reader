@@ -1,6 +1,9 @@
 import SwiftUI
 
 struct ReaderView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotionEnabled
+    @Environment(\.scenePhase) private var scenePhase
+
     private let persistence: ReaderPersistenceActions?
 
     @State private var session: ReadingSession
@@ -46,7 +49,10 @@ struct ReaderView: View {
 
                 RSVPDisplayView(
                     frame: session.currentFrame,
-                    fadeEnabled: session.settings.fadeEnabled,
+                    fadeEnabled: ReaderMotionPolicy.isFadeEnabled(
+                        settings: session.settings,
+                        reduceMotionEnabled: reduceMotionEnabled
+                    ),
                     fadeDurationMilliseconds: session.settings.fadeDurationMilliseconds
                 )
                     .accessibilityIdentifier("reader.current-word")
@@ -109,6 +115,9 @@ struct ReaderView: View {
         }
         .task(id: playbackLoopID) {
             await runPlaybackLoop()
+        }
+        .onChange(of: scenePhase) { _, newScenePhase in
+            handleScenePhaseChange(newScenePhase)
         }
         .sheet(item: $presentedSheet) { sheet in
             switch sheet {
@@ -223,6 +232,16 @@ struct ReaderView: View {
         }
 
         isFocusMode = false
+    }
+
+    @MainActor
+    private func handleScenePhaseChange(_ newScenePhase: ScenePhase) {
+        let lifecyclePhase = ReaderLifecyclePhase(scenePhase: newScenePhase)
+        guard session.pauseForLifecycleTransition(to: lifecyclePhase) else {
+            return
+        }
+
+        playbackLoopID += 1
     }
 
     @MainActor
@@ -412,6 +431,21 @@ private extension ReaderView {
     static let defaultText = """
     Rapid serial visual presentation keeps one word in focus at a time. Load text, set the speed, and read without moving your eyes across the page.
     """
+}
+
+private extension ReaderLifecyclePhase {
+    init(scenePhase: ScenePhase) {
+        switch scenePhase {
+        case .active:
+            self = .active
+        case .inactive:
+            self = .inactive
+        case .background:
+            self = .background
+        @unknown default:
+            self = .inactive
+        }
+    }
 }
 
 #Preview("Default") {

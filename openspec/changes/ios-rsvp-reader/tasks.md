@@ -56,7 +56,7 @@
 ## 8. Accessibility, Lifecycle, And Verification
 
 - [x] 8.1 Add accessibility labels for icon-only and compact controls
-- [ ] 8.2 Respect Reduce Motion and pause playback on app backgrounding
+- [x] 8.2 Respect Reduce Motion and pause playback on app backgrounding
 - [ ] 8.3 Add UI smoke tests for load, playback, jump, save, and resume
 - [ ] 8.4 Run the full unit/UI test suite
 - [ ] 8.5 Run an iOS archive build and update user-facing documentation

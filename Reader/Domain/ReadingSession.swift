@@ -65,6 +65,16 @@ struct ReadingSession: Equatable {
         playbackState = .paused
     }
 
+    @discardableResult
+    mutating func pauseForLifecycleTransition(to phase: ReaderLifecyclePhase) -> Bool {
+        guard phase.shouldPausePlayback, playbackState == .playing else {
+            return false
+        }
+
+        pause()
+        return true
+    }
+
     mutating func resume() {
         guard playbackState == .paused, !words.isEmpty else {
             return
