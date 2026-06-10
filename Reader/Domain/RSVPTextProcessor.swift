@@ -6,6 +6,11 @@ struct WordDisplayParts: Equatable {
     let after: String
 }
 
+struct WordFrame: Equatable {
+    let words: [String]
+    let centerOffset: Int
+}
+
 enum RSVPTextProcessor {
     static func parseText(_ text: String) -> [String] {
         text
@@ -25,6 +30,25 @@ enum RSVPTextProcessor {
             before: String(word[..<index]),
             orp: String(word[index]),
             after: String(word[nextIndex...])
+        )
+    }
+
+    static func wordFrame(words: [String], centerIndex: Int, frameSize: Int) -> WordFrame {
+        guard words.indices.contains(centerIndex) else {
+            return WordFrame(words: [], centerOffset: 0)
+        }
+
+        guard frameSize > 1 else {
+            return WordFrame(words: [words[centerIndex]], centerOffset: 0)
+        }
+
+        let radius = max(0, frameSize / 2)
+        let lowerBound = max(0, centerIndex - radius)
+        let upperBound = min(words.count, centerIndex + radius + 1)
+
+        return WordFrame(
+            words: Array(words[lowerBound..<upperBound]),
+            centerOffset: centerIndex - lowerBound
         )
     }
 

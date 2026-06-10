@@ -50,4 +50,40 @@ final class RSVPTextProcessorTests: XCTestCase {
         XCTAssertEqual(parts.orp, ".")
         XCTAssertEqual(parts.after, "..")
     }
+
+    func testWordFrameReturnsOnlyCurrentWordForSingleWordMode() {
+        let words = ["one", "two", "three"]
+
+        let frame = RSVPTextProcessor.wordFrame(words: words, centerIndex: 1, frameSize: 1)
+
+        XCTAssertEqual(frame.words, ["two"])
+        XCTAssertEqual(frame.centerOffset, 0)
+    }
+
+    func testWordFrameCentersActiveWordWhenNeighborsExist() {
+        let words = ["zero", "one", "two", "three", "four"]
+
+        let frame = RSVPTextProcessor.wordFrame(words: words, centerIndex: 2, frameSize: 5)
+
+        XCTAssertEqual(frame.words, ["zero", "one", "two", "three", "four"])
+        XCTAssertEqual(frame.centerOffset, 2)
+    }
+
+    func testWordFrameClampsAtTextStart() {
+        let words = ["zero", "one", "two", "three", "four"]
+
+        let frame = RSVPTextProcessor.wordFrame(words: words, centerIndex: 0, frameSize: 5)
+
+        XCTAssertEqual(frame.words, ["zero", "one", "two"])
+        XCTAssertEqual(frame.centerOffset, 0)
+    }
+
+    func testWordFrameReturnsEmptyFrameForOutOfRangeIndex() {
+        let words = ["one", "two"]
+
+        let frame = RSVPTextProcessor.wordFrame(words: words, centerIndex: 10, frameSize: 3)
+
+        XCTAssertEqual(frame.words, [])
+        XCTAssertEqual(frame.centerOffset, 0)
+    }
 }
