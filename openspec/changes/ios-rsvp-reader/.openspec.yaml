@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-06-10
+goal: Build a native iOS RSVP reader with text/PDF/EPUB import, ORP display,
+  playback controls, progress, jump, settings, and saved sessions
