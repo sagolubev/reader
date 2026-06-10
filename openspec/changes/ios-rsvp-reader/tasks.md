@@ -59,4 +59,4 @@
 - [x] 8.2 Respect Reduce Motion and pause playback on app backgrounding
 - [x] 8.3 Add UI smoke tests for load, playback, jump, save, and resume
 - [x] 8.4 Run the full unit/UI test suite
-- [ ] 8.5 Run an iOS archive build and update user-facing documentation
+- [x] 8.5 Run an iOS archive build and update user-facing documentation
