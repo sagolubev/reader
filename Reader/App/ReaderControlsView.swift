@@ -26,6 +26,12 @@ struct ReaderProgressView: View {
                         seek(value.location.x, width: proxy.size.width)
                     }
             )
+            .simultaneousGesture(
+                SpatialTapGesture()
+                    .onEnded { value in
+                        seek(value.location.x, width: proxy.size.width)
+                    }
+            )
             .opacity(isSeekingEnabled ? 1 : 0.55)
             .accessibilityLabel("Reading progress")
             .accessibilityValue("\(Int(clampedProgress * 100)) percent")

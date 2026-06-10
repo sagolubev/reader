@@ -3,6 +3,7 @@ import SwiftUI
 @testable import Reader
 
 final class ReaderTests: XCTestCase {
+    @MainActor
     func testRootViewCanBeCreated() {
         _ = RootView()
     }
@@ -77,11 +78,22 @@ final class ReaderTests: XCTestCase {
         _ = ReaderHeaderView(
             wordCount: 12,
             isFocusMode: false,
+            canJump: true,
             canSave: true,
             onLoadContent: {},
+            onJump: {},
             onSave: {},
             onOpenSettings: {},
             onExitFocusMode: {}
+        )
+    }
+
+    @MainActor
+    func testJumpToPositionViewCanBeCreated() {
+        _ = JumpToPositionView(
+            currentWordIndex: 1,
+            totalWordCount: 3,
+            onJump: { _ in }
         )
     }
 

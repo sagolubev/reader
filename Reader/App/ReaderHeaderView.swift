@@ -3,8 +3,10 @@ import SwiftUI
 struct ReaderHeaderView: View {
     let wordCount: Int
     let isFocusMode: Bool
+    let canJump: Bool
     let canSave: Bool
     let onLoadContent: () -> Void
+    let onJump: () -> Void
     let onSave: () -> Void
     let onOpenSettings: () -> Void
     let onExitFocusMode: () -> Void
@@ -48,6 +50,14 @@ struct ReaderHeaderView: View {
                         accessibilityLabel: "Load content",
                         accessibilityIdentifier: "reader.load-content",
                         action: onLoadContent
+                    )
+
+                    HeaderIconButton(
+                        systemName: "target",
+                        accessibilityLabel: "Jump to position",
+                        accessibilityIdentifier: "reader.jump",
+                        isEnabled: canJump,
+                        action: onJump
                     )
 
                     HeaderIconButton(
@@ -106,8 +116,10 @@ private struct HeaderIconButton: View {
             ReaderHeaderView(
                 wordCount: 120,
                 isFocusMode: false,
+                canJump: true,
                 canSave: true,
                 onLoadContent: {},
+                onJump: {},
                 onSave: {},
                 onOpenSettings: {},
                 onExitFocusMode: {}
@@ -115,8 +127,10 @@ private struct HeaderIconButton: View {
             ReaderHeaderView(
                 wordCount: 120,
                 isFocusMode: true,
+                canJump: true,
                 canSave: true,
                 onLoadContent: {},
+                onJump: {},
                 onSave: {},
                 onOpenSettings: {},
                 onExitFocusMode: {}

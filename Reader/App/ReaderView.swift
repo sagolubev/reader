@@ -33,8 +33,10 @@ struct ReaderView: View {
                 ReaderHeaderView(
                     wordCount: session.words.count,
                     isFocusMode: isFocusMode,
+                    canJump: canJump,
                     canSave: !session.words.isEmpty,
                     onLoadContent: showLoadContent,
+                    onJump: showJump,
                     onSave: saveSession,
                     onOpenSettings: showSettings,
                     onExitFocusMode: exitFocusMode
@@ -113,6 +115,12 @@ struct ReaderView: View {
                 }
             case .settings:
                 SettingsView(settings: settingsBinding)
+            case .jump:
+                JumpToPositionView(
+                    currentWordIndex: session.currentWordIndex,
+                    totalWordCount: session.words.count,
+                    onJump: jumpToPosition
+                )
             case .resumeSession(let snapshot):
                 ResumeSessionView(
                     snapshot: snapshot,
@@ -139,6 +147,15 @@ struct ReaderView: View {
     @MainActor
     private func showSettings() {
         presentedSheet = .settings
+    }
+
+    @MainActor
+    private func showJump() {
+        guard canJump else {
+            return
+        }
+
+        presentedSheet = .jump
     }
 
     @MainActor
@@ -252,6 +269,7 @@ struct ReaderView: View {
 
     @MainActor
     private func showJumpShortcut() {
+        showJump()
     }
 
     @MainActor
@@ -290,6 +308,11 @@ struct ReaderView: View {
         } catch {
             persistenceErrorMessage = error.localizedDescription
         }
+    }
+
+    @MainActor
+    private func jumpToPosition(_ target: String) {
+        session.jump(to: target)
     }
 
     @MainActor
@@ -342,6 +365,10 @@ struct ReaderView: View {
         )
     }
 
+    private var canJump: Bool {
+        !session.words.isEmpty && session.playbackState != .playing
+    }
+
     private var persistenceErrorIsPresented: Binding<Bool> {
         Binding(
             get: { persistenceErrorMessage != nil },
@@ -357,6 +384,7 @@ struct ReaderView: View {
 private enum ReaderSheet: Identifiable {
     case loadContent
     case settings
+    case jump
     case resumeSession(SavedSessionSnapshot)
 
     var id: String {
@@ -365,6 +393,8 @@ private enum ReaderSheet: Identifiable {
             return "load-content"
         case .settings:
             return "settings"
+        case .jump:
+            return "jump"
         case .resumeSession(let snapshot):
             return "resume-session-\(snapshot.savedAt.timeIntervalSince1970)"
         }
