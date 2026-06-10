@@ -15,4 +15,22 @@ final class ReaderTests: XCTestCase {
     func testRSVPDisplayViewCanBeCreated() {
         _ = RSVPDisplayView(word: "reading")
     }
+
+    @MainActor
+    func testReaderProgressViewCanBeCreated() {
+        _ = ReaderProgressView(progress: 0.25, isSeekingEnabled: true) { _ in }
+    }
+
+    @MainActor
+    func testPlaybackControlsViewCanBeCreated() {
+        _ = PlaybackControlsView(
+            playbackState: .stopped,
+            canStep: true,
+            onRestart: {},
+            onStepBackward: {},
+            onPlayPause: {},
+            onStop: {},
+            onStepForward: {}
+        )
+    }
 }
