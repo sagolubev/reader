@@ -3,6 +3,7 @@ import SwiftUI
 struct ReaderHeaderView: View {
     let wordCount: Int
     let isFocusMode: Bool
+    let onLoadContent: () -> Void
     let onExitFocusMode: () -> Void
 
     var body: some View {
@@ -37,6 +38,21 @@ struct ReaderHeaderView: View {
                 }
 
                 Spacer()
+
+                Button(action: onLoadContent) {
+                    Image(systemName: "doc.badge.plus")
+                        .font(.system(size: 18, weight: .semibold))
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.white)
+                .background(
+                    Circle()
+                        .fill(Color.white.opacity(0.14))
+                )
+                .accessibilityLabel("Load content")
+                .accessibilityIdentifier("reader.load-content")
             }
         }
         .frame(height: 48)
@@ -48,8 +64,18 @@ struct ReaderHeaderView: View {
     ZStack {
         Color.black.ignoresSafeArea()
         VStack(spacing: 24) {
-            ReaderHeaderView(wordCount: 120, isFocusMode: false, onExitFocusMode: {})
-            ReaderHeaderView(wordCount: 120, isFocusMode: true, onExitFocusMode: {})
+            ReaderHeaderView(
+                wordCount: 120,
+                isFocusMode: false,
+                onLoadContent: {},
+                onExitFocusMode: {}
+            )
+            ReaderHeaderView(
+                wordCount: 120,
+                isFocusMode: true,
+                onLoadContent: {},
+                onExitFocusMode: {}
+            )
         }
         .padding()
     }

@@ -4,6 +4,7 @@ struct ReaderView: View {
     @State private var session: ReadingSession
     @State private var playbackLoopID = 0
     @State private var isFocusMode = false
+    @State private var presentedSheet: ReaderSheet?
 
     init(initialText: String = ReaderView.defaultText) {
         var session = ReadingSession()
@@ -19,6 +20,7 @@ struct ReaderView: View {
                 ReaderHeaderView(
                     wordCount: session.words.count,
                     isFocusMode: isFocusMode,
+                    onLoadContent: showLoadContent,
                     onExitFocusMode: exitFocusMode
                 )
 
@@ -63,6 +65,26 @@ struct ReaderView: View {
         .task(id: playbackLoopID) {
             await runPlaybackLoop()
         }
+        .sheet(item: $presentedSheet) { sheet in
+            switch sheet {
+            case .loadContent:
+                LoadContentView { text in
+                    loadText(text)
+                }
+            }
+        }
+    }
+
+    @MainActor
+    private func showLoadContent() {
+        presentedSheet = .loadContent
+    }
+
+    @MainActor
+    private func loadText(_ text: String) {
+        session.loadText(text)
+        isFocusMode = false
+        playbackLoopID += 1
     }
 
     @MainActor
@@ -152,6 +174,17 @@ struct ReaderView: View {
         }
 
         return max(1, delay)
+    }
+}
+
+private enum ReaderSheet: Identifiable {
+    case loadContent
+
+    var id: String {
+        switch self {
+        case .loadContent:
+            return "load-content"
+        }
     }
 }
 

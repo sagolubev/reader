@@ -36,6 +36,16 @@ final class ReaderTests: XCTestCase {
 
     @MainActor
     func testReaderHeaderViewCanBeCreated() {
-        _ = ReaderHeaderView(wordCount: 12, isFocusMode: false, onExitFocusMode: {})
+        _ = ReaderHeaderView(
+            wordCount: 12,
+            isFocusMode: false,
+            onLoadContent: {},
+            onExitFocusMode: {}
+        )
+    }
+
+    @MainActor
+    func testLoadContentViewCanBeCreated() {
+        _ = LoadContentView { _ in }
     }
 }
