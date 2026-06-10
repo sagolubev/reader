@@ -1,4 +1,5 @@
 import XCTest
+import SwiftUI
 @testable import Reader
 
 final class ReaderTests: XCTestCase {
@@ -40,6 +41,7 @@ final class ReaderTests: XCTestCase {
             wordCount: 12,
             isFocusMode: false,
             onLoadContent: {},
+            onOpenSettings: {},
             onExitFocusMode: {}
         )
     }
@@ -47,5 +49,15 @@ final class ReaderTests: XCTestCase {
     @MainActor
     func testLoadContentViewCanBeCreated() {
         _ = LoadContentView { _ in }
+    }
+
+    @MainActor
+    func testSettingsViewCanBeCreated() {
+        let settings = Binding<ReaderSettings>(
+            get: { ReaderSettings() },
+            set: { _ in }
+        )
+
+        _ = SettingsView(settings: settings)
     }
 }

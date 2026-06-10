@@ -4,6 +4,7 @@ struct ReaderHeaderView: View {
     let wordCount: Int
     let isFocusMode: Bool
     let onLoadContent: () -> Void
+    let onOpenSettings: () -> Void
     let onExitFocusMode: () -> Void
 
     var body: some View {
@@ -39,24 +40,49 @@ struct ReaderHeaderView: View {
 
                 Spacer()
 
-                Button(action: onLoadContent) {
-                    Image(systemName: "doc.badge.plus")
-                        .font(.system(size: 18, weight: .semibold))
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
+                HStack(spacing: 10) {
+                    HeaderIconButton(
+                        systemName: "doc.badge.plus",
+                        accessibilityLabel: "Load content",
+                        accessibilityIdentifier: "reader.load-content",
+                        action: onLoadContent
+                    )
+
+                    HeaderIconButton(
+                        systemName: "gearshape.fill",
+                        accessibilityLabel: "Settings",
+                        accessibilityIdentifier: "reader.settings",
+                        action: onOpenSettings
+                    )
                 }
-                .buttonStyle(.plain)
-                .foregroundStyle(.white)
-                .background(
-                    Circle()
-                        .fill(Color.white.opacity(0.14))
-                )
-                .accessibilityLabel("Load content")
-                .accessibilityIdentifier("reader.load-content")
             }
         }
         .frame(height: 48)
         .animation(.easeInOut(duration: 0.18), value: isFocusMode)
+    }
+}
+
+private struct HeaderIconButton: View {
+    let systemName: String
+    let accessibilityLabel: String
+    let accessibilityIdentifier: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 18, weight: .semibold))
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(.white)
+        .background(
+            Circle()
+                .fill(Color.white.opacity(0.14))
+        )
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityIdentifier(accessibilityIdentifier)
     }
 }
 
@@ -68,12 +94,14 @@ struct ReaderHeaderView: View {
                 wordCount: 120,
                 isFocusMode: false,
                 onLoadContent: {},
+                onOpenSettings: {},
                 onExitFocusMode: {}
             )
             ReaderHeaderView(
                 wordCount: 120,
                 isFocusMode: true,
                 onLoadContent: {},
+                onOpenSettings: {},
                 onExitFocusMode: {}
             )
         }

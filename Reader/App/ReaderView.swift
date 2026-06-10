@@ -21,6 +21,7 @@ struct ReaderView: View {
                     wordCount: session.words.count,
                     isFocusMode: isFocusMode,
                     onLoadContent: showLoadContent,
+                    onOpenSettings: showSettings,
                     onExitFocusMode: exitFocusMode
                 )
 
@@ -71,6 +72,8 @@ struct ReaderView: View {
                 LoadContentView { text in
                     loadText(text)
                 }
+            case .settings:
+                SettingsView(settings: settingsBinding)
             }
         }
     }
@@ -78,6 +81,11 @@ struct ReaderView: View {
     @MainActor
     private func showLoadContent() {
         presentedSheet = .loadContent
+    }
+
+    @MainActor
+    private func showSettings() {
+        presentedSheet = .settings
     }
 
     @MainActor
@@ -175,15 +183,29 @@ struct ReaderView: View {
 
         return max(1, delay)
     }
+
+    private var settingsBinding: Binding<ReaderSettings> {
+        Binding(
+            get: { session.settings },
+            set: { newSettings in
+                var normalizedSettings = newSettings
+                normalizedSettings.normalizeForControls()
+                session.settings = normalizedSettings
+            }
+        )
+    }
 }
 
 private enum ReaderSheet: Identifiable {
     case loadContent
+    case settings
 
     var id: String {
         switch self {
         case .loadContent:
             return "load-content"
+        case .settings:
+            return "settings"
         }
     }
 }
