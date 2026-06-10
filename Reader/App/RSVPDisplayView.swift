@@ -28,33 +28,40 @@ struct RSVPDisplayView: View {
         let parts = RSVPTextProcessor.splitForDisplay(currentWord)
         let before = joinedWords(prefixWords, parts.before)
         let after = joinedWords(parts.after, suffixWords)
-        let orpHalfWidth = displayFontSize * 0.3
 
-        ZStack {
-            centerMarker
+        GeometryReader { proxy in
+            let centerColumnWidth = displayFontSize * 0.72
+            let sideWidth = max(0, (proxy.size.width - centerColumnWidth) / 2)
 
             ZStack {
-                Text(before)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .offset(x: -orpHalfWidth)
+                centerMarker
 
-                Text(parts.orp)
-                    .foregroundStyle(markerColor)
-                    .frame(maxWidth: .infinity, alignment: .center)
+                HStack(spacing: 0) {
+                    Text(before)
+                        .frame(width: sideWidth, alignment: .trailing)
+                        .clipped()
 
-                Text(after)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .offset(x: orpHalfWidth)
+                    Text(parts.orp)
+                        .foregroundStyle(markerColor)
+                        .frame(width: centerColumnWidth, alignment: .center)
+
+                    Text(after)
+                        .frame(width: sideWidth, alignment: .leading)
+                        .clipped()
+                }
+                .frame(width: proxy.size.width)
             }
-            .font(.system(size: displayFontSize, weight: .medium, design: .monospaced))
-            .foregroundStyle(.white)
-            .lineLimit(1)
-            .minimumScaleFactor(0.28)
-            .opacity(displayOpacity)
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(accessibilityText)
-            .accessibilityIdentifier("reader.orp-display")
+            .frame(width: proxy.size.width, height: proxy.size.height)
         }
+        .font(.system(size: displayFontSize, weight: .medium, design: .monospaced))
+        .foregroundStyle(.white)
+        .lineLimit(1)
+        .minimumScaleFactor(0.28)
+        .allowsTightening(true)
+        .opacity(displayOpacity)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityText)
+        .accessibilityIdentifier("reader.orp-display")
         .frame(maxWidth: .infinity)
         .frame(height: 148)
         .onChange(of: displayID) {
