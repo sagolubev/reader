@@ -3,6 +3,7 @@ import SwiftUI
 struct ReaderView: View {
     @State private var session: ReadingSession
     @State private var playbackLoopID = 0
+    @State private var isFocusMode = false
 
     init(initialText: String = ReaderView.defaultText) {
         var session = ReadingSession()
@@ -15,7 +16,11 @@ struct ReaderView: View {
             Color.black.ignoresSafeArea()
 
             VStack(spacing: 28) {
-                header
+                ReaderHeaderView(
+                    wordCount: session.words.count,
+                    isFocusMode: isFocusMode,
+                    onExitFocusMode: exitFocusMode
+                )
 
                 Spacer(minLength: 24)
 
@@ -60,23 +65,6 @@ struct ReaderView: View {
         }
     }
 
-    private var header: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Reader")
-                    .font(.headline)
-                    .foregroundStyle(.white)
-
-                Text("\(session.words.count) words")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .accessibilityIdentifier("reader.word-count")
-            }
-
-            Spacer()
-        }
-    }
-
     @MainActor
     private func playPause() {
         switch session.playbackState {
@@ -84,8 +72,10 @@ struct ReaderView: View {
             session.pause()
         case .paused:
             session.resume()
+            isFocusMode = true
         case .stopped:
             session.play()
+            isFocusMode = true
         }
 
         playbackLoopID += 1
@@ -94,13 +84,25 @@ struct ReaderView: View {
     @MainActor
     private func restart() {
         session.restart()
+        isFocusMode = true
         playbackLoopID += 1
     }
 
     @MainActor
     private func stop() {
         session.stop()
+        isFocusMode = false
         playbackLoopID += 1
+    }
+
+    @MainActor
+    private func exitFocusMode() {
+        if session.playbackState == .playing {
+            session.pause()
+            playbackLoopID += 1
+        }
+
+        isFocusMode = false
     }
 
     @MainActor
