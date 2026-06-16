@@ -11,7 +11,7 @@ struct JumpToPositionView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.black.ignoresSafeArea()
+                ReaderTheme.background.ignoresSafeArea()
 
                 VStack(alignment: .leading, spacing: 18) {
                     Text("\(currentWordIndex + 1) / \(totalWordCount)")
@@ -54,7 +54,7 @@ struct JumpToPositionView: View {
                 }
             }
         }
-        .preferredColorScheme(.dark)
+        .tint(ReaderTheme.accent)
         .accessibilityIdentifier("jump.sheet")
     }
 

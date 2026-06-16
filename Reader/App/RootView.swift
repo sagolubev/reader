@@ -12,7 +12,8 @@ struct RootView: View {
 
     var body: some View {
         ReaderView(
-            sessionStore: SessionStore(modelContext: modelContext),
+            libraryStore: BookLibraryStore(modelContext: modelContext),
+            legacySessionStore: SessionStore(modelContext: modelContext),
             resetSavedSessionOnLaunch: launchOptions.resetSavedSessionOnLaunch
         )
     }
@@ -20,5 +21,12 @@ struct RootView: View {
 
 #Preview {
     RootView()
-        .modelContainer(for: SavedReadingSessionRecord.self, inMemory: true)
+        .modelContainer(
+            for: [
+                SavedReadingSessionRecord.self,
+                StoredBookRecord.self,
+                StoredBookmarkRecord.self
+            ],
+            inMemory: true
+        )
 }

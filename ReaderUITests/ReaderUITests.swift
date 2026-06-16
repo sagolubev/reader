@@ -23,34 +23,18 @@ final class ReaderUITests: XCTestCase {
     }
 
     @MainActor
-    func testLoadPlaybackJumpSaveAndResumeSmokeFlow() {
+    func testPlaybackJumpAndLibrarySmokeFlow() {
         launch(resetSavedSession: true)
         XCTAssertTrue(element("reader.current-word").waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["reader.add-book"].waitForExistence(timeout: 5))
 
-        loadText("zero one two three four five six seven eight nine")
-        XCTAssertEqual(app.staticTexts["reader.word-count"].label, "10 words")
-
+        openLibraryAndAssertAddBookAction()
         playAndPause()
         jump(to: "50%")
-        assertProgressSummaryContains(["6", "10"])
-
-        let saveButton = app.buttons["reader.save-session"]
-        XCTAssertTrue(saveButton.waitForExistence(timeout: 5))
-        saveButton.tap()
-
-        app.terminate()
-        app = XCUIApplication()
-        launch(resetSavedSession: false)
-
-        let resumeButton = app.buttons["resume-session.resume"]
-        XCTAssertTrue(resumeButton.waitForExistence(timeout: 5))
-        resumeButton.tap()
-
-        XCTAssertTrue(element("reader.current-word").waitForExistence(timeout: 5))
-        XCTAssertEqual(app.staticTexts["reader.word-count"].label, "10 words")
-        assertProgressSummaryContains(["6", "10"])
+        XCTAssertTrue(element("reader.progress-summary").waitForExistence(timeout: 5))
     }
 
+    @MainActor
     private func launch(resetSavedSession: Bool) {
         app.launchArguments = resetSavedSession ? [Self.resetSavedSessionArgument] : []
         app.launch()
@@ -60,23 +44,23 @@ final class ReaderUITests: XCTestCase {
         }
     }
 
-    private func loadText(_ text: String) {
-        let loadContentButton = app.buttons["reader.load-content"]
-        XCTAssertTrue(loadContentButton.waitForExistence(timeout: 5))
-        loadContentButton.tap()
+    @MainActor
+    private func openLibraryAndAssertAddBookAction() {
+        let libraryButton = app.buttons["reader.open-library"]
+        XCTAssertTrue(libraryButton.waitForExistence(timeout: 5))
+        libraryButton.tap()
 
-        let editor = app.textViews["load-content.text-editor"]
-        XCTAssertTrue(editor.waitForExistence(timeout: 5))
-        editor.tap()
-        editor.typeText(text)
+        XCTAssertTrue(element("library.sheet").waitForExistence(timeout: 5))
+        XCTAssertTrue(element("library.empty").waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["library.add-book"].waitForExistence(timeout: 5))
 
-        let loadTextButton = app.buttons["load-content.load-text"]
-        XCTAssertTrue(loadTextButton.waitForExistence(timeout: 5))
-        loadTextButton.tap()
-
-        XCTAssertTrue(app.staticTexts["reader.word-count"].waitForExistence(timeout: 5))
+        let closeButton = app.buttons["Close"]
+        XCTAssertTrue(closeButton.waitForExistence(timeout: 5))
+        closeButton.tap()
+        XCTAssertTrue(element("library.sheet").waitForNonExistence(timeout: 5))
     }
 
+    @MainActor
     private func playAndPause() {
         let playButton = app.buttons["Play"]
         XCTAssertTrue(playButton.waitForExistence(timeout: 5))
@@ -91,6 +75,7 @@ final class ReaderUITests: XCTestCase {
         exitFocusButton.tap()
     }
 
+    @MainActor
     private func jump(to target: String) {
         let jumpButton = app.buttons["reader.jump"]
         XCTAssertTrue(jumpButton.waitForExistence(timeout: 5))
@@ -109,6 +94,7 @@ final class ReaderUITests: XCTestCase {
         XCTAssertTrue(element("reader.progress-summary").waitForExistence(timeout: 5))
     }
 
+    @MainActor
     private func startFreshIfPromptAppears() {
         let startFreshButton = app.buttons["resume-session.start-fresh"]
         if startFreshButton.waitForExistence(timeout: 1) {
@@ -116,31 +102,7 @@ final class ReaderUITests: XCTestCase {
         }
     }
 
-    private func assertProgressSummaryContains(
-        _ expectedFragments: [String],
-        file: StaticString = #filePath,
-        line: UInt = #line
-    ) {
-        let summary = element("reader.progress-summary")
-        XCTAssertTrue(summary.waitForExistence(timeout: 5), file: file, line: line)
-        let summaryText = accessibilityText(for: summary)
-
-        for fragment in expectedFragments {
-            XCTAssertTrue(
-                summaryText.contains(fragment),
-                "Expected progress summary to contain \(fragment), got: \(summaryText)",
-                file: file,
-                line: line
-            )
-        }
-    }
-
-    private func accessibilityText(for element: XCUIElement) -> String {
-        [element.label, element.value as? String]
-            .compactMap { $0 }
-            .joined(separator: " ")
-    }
-
+    @MainActor
     private func element(_ identifier: String) -> XCUIElement {
         app.descendants(matching: .any)[identifier]
     }

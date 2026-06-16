@@ -4,48 +4,56 @@ struct ReaderView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotionEnabled
     @Environment(\.scenePhase) private var scenePhase
 
-    private let persistence: ReaderPersistenceActions?
+    private let libraryStore: BookLibraryStore?
+    private let legacySessionStore: SessionStore?
     private let resetSavedSessionOnLaunch: Bool
 
+    @AppStorage(ReaderThemeMode.storageKey) private var themeModeRawValue = ReaderThemeMode.lightWarm.rawValue
+
     @State private var session: ReadingSession
+    @State private var activeBookID: UUID?
+    @State private var books: [LibraryBookSnapshot] = []
+    @State private var bookmarks: [BookmarkSnapshot] = []
+    @State private var isCurrentPositionBookmarked = false
     @State private var playbackLoopID = 0
     @State private var isFocusMode = false
     @State private var presentedSheet: ReaderSheet?
-    @State private var didCheckSavedSession = false
+    @State private var isBookFileImporterPresented = false
+    @State private var didCheckLibrary = false
     @State private var persistenceErrorMessage: String?
 
     init(
         initialText: String = ReaderView.defaultText,
-        sessionStore: (any SessionPersisting)? = nil,
+        libraryStore: BookLibraryStore? = nil,
+        legacySessionStore: SessionStore? = nil,
         resetSavedSessionOnLaunch: Bool = false
     ) {
+        self.libraryStore = libraryStore
+        self.legacySessionStore = legacySessionStore
         self.resetSavedSessionOnLaunch = resetSavedSessionOnLaunch
 
         var session = ReadingSession()
         session.loadText(initialText)
         _session = State(initialValue: session)
-
-        if let sessionStore {
-            persistence = ReaderPersistenceActions(store: sessionStore)
-        } else {
-            persistence = nil
-        }
     }
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            ReaderTheme.background.ignoresSafeArea()
 
             VStack(spacing: 28) {
                 ReaderHeaderView(
                     wordCount: session.words.count,
                     isFocusMode: isFocusMode,
                     canJump: canJump,
-                    canSave: !session.words.isEmpty,
-                    onLoadContent: showLoadContent,
+                    canBookmark: canBookmark,
+                    onOpenLibrary: showLibrary,
+                    onAddBook: showBookFileImporter,
+                    onOpenBookmarks: showBookmarks,
                     onJump: showJump,
-                    onSave: saveSession,
                     onOpenSettings: showSettings,
+                    themeMode: themeMode,
+                    onToggleTheme: toggleTheme,
                     onExitFocusMode: exitFocusMode
                 )
 
@@ -67,6 +75,8 @@ struct ReaderView: View {
                         isSeekingEnabled: session.playbackState != .playing
                     ) { fraction in
                         session.seek(toPercentage: fraction * 100)
+                        persistActiveBook()
+                        refreshBookmarkState()
                     }
 
                     HStack {
@@ -75,7 +85,7 @@ struct ReaderView: View {
                         Text(session.timeRemaining)
                     }
                     .font(.footnote.monospacedDigit())
-                    .foregroundStyle(.white.opacity(0.72))
+                    .foregroundStyle(ReaderTheme.secondaryText)
                     .accessibilityElement(children: .combine)
                     .accessibilityLabel("Reading position")
                     .accessibilityValue("\(session.currentWordIndex + 1) of \(session.words.count) words, \(session.timeRemaining) remaining")
@@ -98,6 +108,12 @@ struct ReaderView: View {
                         onSlower: slowDown,
                         onFaster: speedUp,
                         onStepForward: stepForwardByTouch
+                    )
+
+                    ReaderBookmarkControlsView(
+                        canBookmark: canBookmark,
+                        isCurrentPositionBookmarked: isCurrentPositionBookmarked,
+                        onToggleBookmark: toggleBookmark
                     )
                 }
 
@@ -125,10 +141,19 @@ struct ReaderView: View {
         }
         .sheet(item: $presentedSheet) { sheet in
             switch sheet {
-            case .loadContent:
-                LoadContentView { text in
-                    loadText(text)
-                }
+            case .library:
+                LibraryView(
+                    books: books,
+                    activeBookID: activeBookID,
+                    onOpenBook: openLibraryBook,
+                    onAddBook: importLibraryBookFile,
+                    onDeleteBook: deleteLibraryBook
+                )
+            case .bookmarks:
+                BookmarksView(
+                    bookmarks: bookmarks,
+                    onSelectBookmark: jumpToBookmark
+                )
             case .settings:
                 SettingsView(settings: settingsBinding)
             case .jump:
@@ -137,32 +162,55 @@ struct ReaderView: View {
                     totalWordCount: session.words.count,
                     onJump: jumpToPosition
                 )
-            case .resumeSession(let snapshot):
-                ResumeSessionView(
-                    snapshot: snapshot,
-                    onResume: { resumeSavedSession(snapshot) },
-                    onStartFresh: startFresh
-                )
             }
         }
+        .fileImporter(
+            isPresented: $isBookFileImporterPresented,
+            allowedContentTypes: SupportedBookFileTypes.documentTypes,
+            allowsMultipleSelection: false,
+            onCompletion: handleBookFileSelection
+        )
         .task {
-            showSavedSessionPromptIfNeeded()
+            openLastBookIfNeeded()
         }
-        .alert("Session Error", isPresented: persistenceErrorIsPresented) {
+        .alert("Library Error", isPresented: persistenceErrorIsPresented) {
             Button("OK", role: .cancel) {}
         } message: {
             Text(persistenceErrorMessage ?? "")
         }
+        .preferredColorScheme(themeMode.preferredColorScheme)
     }
 
     @MainActor
-    private func showLoadContent() {
-        presentedSheet = .loadContent
+    private func showLibrary() {
+        persistActiveBook()
+        refreshLibrary()
+        presentedSheet = .library
+    }
+
+    @MainActor
+    private func showBookFileImporter() {
+        isBookFileImporterPresented = true
     }
 
     @MainActor
     private func showSettings() {
         presentedSheet = .settings
+    }
+
+    @MainActor
+    private func toggleTheme() {
+        themeModeRawValue = themeMode.next.rawValue
+    }
+
+    @MainActor
+    private func showBookmarks() {
+        guard canBookmark else {
+            return
+        }
+
+        refreshBookmarks()
+        presentedSheet = .bookmarks
     }
 
     @MainActor
@@ -175,21 +223,32 @@ struct ReaderView: View {
     }
 
     @MainActor
-    private func showSavedSessionPromptIfNeeded() {
-        guard !didCheckSavedSession, let persistence else {
+    private func openLastBookIfNeeded() {
+        guard !didCheckLibrary, let libraryStore else {
             return
         }
 
-        didCheckSavedSession = true
+        didCheckLibrary = true
 
         do {
             if resetSavedSessionOnLaunch {
-                try persistence.startFresh()
+                try libraryStore.clearLibrary()
+                try legacySessionStore?.clear()
+                refreshLibrary()
                 return
             }
 
-            if let snapshot = try persistence.loadSavedSession() {
-                presentedSheet = .resumeSession(snapshot)
+            let migratedBook = try migrateLegacySessionIfNeeded()
+            refreshLibrary()
+            let bookToOpen: LibraryBookSnapshot?
+            if let migratedBook {
+                bookToOpen = migratedBook
+            } else {
+                bookToOpen = try libraryStore.lastOpenedBook()
+            }
+
+            if let snapshot = bookToOpen {
+                restoreLibraryBook(snapshot)
             }
         } catch {
             persistenceErrorMessage = error.localizedDescription
@@ -197,9 +256,164 @@ struct ReaderView: View {
     }
 
     @MainActor
-    private func loadText(_ text: String) {
-        session.loadText(text)
+    private func loadImportedContent(_ content: ImportedContent) {
+        guard let libraryStore else {
+            session.loadText(content.text)
+            isFocusMode = false
+            playbackLoopID += 1
+            return
+        }
+
+        do {
+            persistActiveBook()
+            let book = try libraryStore.createBook(
+                title: content.title,
+                sourceKind: content.sourceKind,
+                text: content.text,
+                settings: session.settings
+            )
+            restoreLibraryBook(book)
+            refreshLibrary()
+        } catch {
+            persistenceErrorMessage = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func importLibraryBookFile(_ url: URL) {
+        Task {
+            await Task.yield()
+
+            let didAccessSecurityScope = url.startAccessingSecurityScopedResource()
+            defer {
+                if didAccessSecurityScope {
+                    url.stopAccessingSecurityScopedResource()
+                }
+            }
+
+            do {
+                let text = try DocumentImportService().importText(from: url)
+                loadImportedContent(ImportedContent(
+                    title: url.deletingPathExtension().lastPathComponent,
+                    sourceKind: BookSourceKind(url: url),
+                    text: text
+                ))
+                presentedSheet = nil
+            } catch {
+                persistenceErrorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    private func handleBookFileSelection(_ result: Result<[URL], Error>) {
+        guard case .success(let urls) = result, let url = urls.first else {
+            return
+        }
+
+        Task { @MainActor in
+            importLibraryBookFile(url)
+        }
+    }
+
+    @MainActor
+    private func openLibraryBook(_ book: LibraryBookSnapshot) {
+        guard let libraryStore else {
+            restoreLibraryBook(book)
+            return
+        }
+
+        do {
+            persistActiveBook()
+            if let opened = try libraryStore.openBook(id: book.id) {
+                restoreLibraryBook(opened)
+                refreshLibrary()
+            }
+        } catch {
+            persistenceErrorMessage = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func deleteLibraryBook(_ book: LibraryBookSnapshot) {
+        guard let libraryStore else {
+            return
+        }
+
+        do {
+            try libraryStore.deleteBook(id: book.id)
+            refreshLibrary()
+
+            if activeBookID == book.id {
+                if let replacement = try libraryStore.lastOpenedBook() {
+                    restoreLibraryBook(replacement)
+                } else {
+                    activeBookID = nil
+                    session.loadText(Self.defaultText)
+                    bookmarks = []
+                    isCurrentPositionBookmarked = false
+                    isFocusMode = false
+                    playbackLoopID += 1
+                }
+            }
+        } catch {
+            persistenceErrorMessage = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func restoreLibraryBook(_ book: LibraryBookSnapshot) {
+        activeBookID = book.id
+        session.restore(from: book)
         isFocusMode = false
+        refreshBookmarks()
+        refreshBookmarkState()
+        playbackLoopID += 1
+    }
+
+    @MainActor
+    private func migrateLegacySessionIfNeeded() throws -> LibraryBookSnapshot? {
+        guard
+            let libraryStore,
+            let legacySessionStore,
+            let legacySnapshot = try legacySessionStore.load()
+        else {
+            return nil
+        }
+
+        guard let migratedBook = try libraryStore.migrateLegacySession(legacySnapshot) else {
+            return nil
+        }
+
+        try legacySessionStore.clear()
+        return migratedBook
+    }
+
+    @MainActor
+    private func toggleBookmark() {
+        guard let libraryStore, let activeBookID else {
+            return
+        }
+
+        do {
+            _ = try libraryStore.toggleBookmark(
+                bookID: activeBookID,
+                wordIndex: session.currentWordIndex,
+                words: session.words
+            )
+            refreshBookmarks()
+            refreshBookmarkState()
+        } catch {
+            persistenceErrorMessage = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func jumpToBookmark(_ bookmark: BookmarkSnapshot) {
+        session.currentWordIndex = min(session.words.count - 1, max(0, bookmark.wordIndex))
+        session.playbackState = .stopped
+        isFocusMode = false
+        persistActiveBook()
+        refreshBookmarkState()
         playbackLoopID += 1
     }
 
@@ -208,6 +422,7 @@ struct ReaderView: View {
         switch session.playbackState {
         case .playing:
             session.pause()
+            persistActiveBook()
         case .paused:
             session.resume()
             isFocusMode = true
@@ -223,6 +438,8 @@ struct ReaderView: View {
     private func restart() {
         session.restart()
         isFocusMode = true
+        persistActiveBook()
+        refreshBookmarkState()
         playbackLoopID += 1
     }
 
@@ -230,6 +447,8 @@ struct ReaderView: View {
     private func stop() {
         session.stop()
         isFocusMode = false
+        persistActiveBook()
+        refreshBookmarkState()
         playbackLoopID += 1
     }
 
@@ -241,61 +460,78 @@ struct ReaderView: View {
         }
 
         isFocusMode = false
+        persistActiveBook()
     }
 
     @MainActor
     private func handleScenePhaseChange(_ newScenePhase: ScenePhase) {
         let lifecyclePhase = ReaderLifecyclePhase(scenePhase: newScenePhase)
-        guard session.pauseForLifecycleTransition(to: lifecyclePhase) else {
-            return
+        if session.pauseForLifecycleTransition(to: lifecyclePhase) {
+            playbackLoopID += 1
         }
 
-        playbackLoopID += 1
+        if lifecyclePhase.shouldPausePlayback {
+            persistActiveBook()
+        }
     }
 
     @MainActor
     private func stepBackward() {
         session.stepBackward()
+        persistActiveBook()
+        refreshBookmarkState()
     }
 
     @MainActor
     private func stepForward() {
         session.stepForward()
+        persistActiveBook()
+        refreshBookmarkState()
     }
 
     @MainActor
     private func stepBackwardByTouch() {
         session.stepBackward(by: Self.touchWordStep)
+        persistActiveBook()
+        refreshBookmarkState()
     }
 
     @MainActor
     private func stepForwardByTouch() {
         session.stepForward(by: Self.touchWordStep)
+        persistActiveBook()
+        refreshBookmarkState()
     }
 
     @MainActor
     private func slowDown() {
         session.adjustWordsPerMinute(by: -Self.touchWordsPerMinuteStep)
+        persistActiveBook()
     }
 
     @MainActor
     private func speedUp() {
         session.adjustWordsPerMinute(by: Self.touchWordsPerMinuteStep)
+        persistActiveBook()
     }
 
     @MainActor
     private func stepBackwardByKeyboard() {
         session.stepBackward(by: Self.keyboardBackwardWordStep)
+        persistActiveBook()
+        refreshBookmarkState()
     }
 
     @MainActor
     private func slowDownByKeyboard() {
         session.adjustWordsPerMinute(by: -ReaderSettings.wordsPerMinuteStep)
+        persistActiveBook()
     }
 
     @MainActor
     private func speedUpByKeyboard() {
         session.adjustWordsPerMinute(by: ReaderSettings.wordsPerMinuteStep)
+        persistActiveBook()
     }
 
     @MainActor
@@ -305,45 +541,14 @@ struct ReaderView: View {
 
     @MainActor
     private func saveShortcut() {
-        saveSession()
-    }
-
-    @MainActor
-    private func saveSession() {
-        guard let persistence else {
-            return
-        }
-
-        do {
-            try persistence.save(session)
-        } catch {
-            persistenceErrorMessage = error.localizedDescription
-        }
-    }
-
-    @MainActor
-    private func resumeSavedSession(_ snapshot: SavedSessionSnapshot) {
-        persistence?.resume(snapshot, into: &session)
-        isFocusMode = false
-        playbackLoopID += 1
-    }
-
-    @MainActor
-    private func startFresh() {
-        guard let persistence else {
-            return
-        }
-
-        do {
-            try persistence.startFresh()
-        } catch {
-            persistenceErrorMessage = error.localizedDescription
-        }
+        persistActiveBook()
     }
 
     @MainActor
     private func jumpToPosition(_ target: String) {
         session.jump(to: target)
+        persistActiveBook()
+        refreshBookmarkState()
     }
 
     @MainActor
@@ -366,6 +571,65 @@ struct ReaderView: View {
             }
 
             session.advanceOneWord()
+            refreshBookmarkState()
+        }
+    }
+
+    @MainActor
+    private func persistActiveBook() {
+        guard let libraryStore, let activeBookID else {
+            return
+        }
+
+        do {
+            try libraryStore.updateBook(id: activeBookID, from: session)
+            refreshLibrary()
+        } catch {
+            persistenceErrorMessage = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func refreshLibrary() {
+        guard let libraryStore else {
+            return
+        }
+
+        do {
+            books = try libraryStore.listBooks()
+        } catch {
+            persistenceErrorMessage = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func refreshBookmarks() {
+        guard let libraryStore, let activeBookID else {
+            bookmarks = []
+            return
+        }
+
+        do {
+            bookmarks = try libraryStore.bookmarks(for: activeBookID)
+        } catch {
+            persistenceErrorMessage = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func refreshBookmarkState() {
+        guard let libraryStore, let activeBookID else {
+            isCurrentPositionBookmarked = false
+            return
+        }
+
+        do {
+            isCurrentPositionBookmarked = try libraryStore.isBookmarked(
+                bookID: activeBookID,
+                wordIndex: session.currentWordIndex
+            )
+        } catch {
+            persistenceErrorMessage = error.localizedDescription
         }
     }
 
@@ -392,12 +656,21 @@ struct ReaderView: View {
                 var normalizedSettings = newSettings
                 normalizedSettings.normalizeForControls()
                 session.settings = normalizedSettings
+                persistActiveBook()
             }
         )
     }
 
     private var canJump: Bool {
         !session.words.isEmpty && session.playbackState != .playing
+    }
+
+    private var canBookmark: Bool {
+        activeBookID != nil && !session.words.isEmpty
+    }
+
+    private var themeMode: ReaderThemeMode {
+        ReaderThemeMode(rawValue: themeModeRawValue) ?? .lightWarm
     }
 
     private var persistenceErrorIsPresented: Binding<Bool> {
@@ -413,21 +686,21 @@ struct ReaderView: View {
 }
 
 private enum ReaderSheet: Identifiable {
-    case loadContent
+    case library
+    case bookmarks
     case settings
     case jump
-    case resumeSession(SavedSessionSnapshot)
 
     var id: String {
         switch self {
-        case .loadContent:
-            return "load-content"
+        case .library:
+            return "library"
+        case .bookmarks:
+            return "bookmarks"
         case .settings:
             return "settings"
         case .jump:
             return "jump"
-        case .resumeSession(let snapshot):
-            return "resume-session-\(snapshot.savedAt.timeIntervalSince1970)"
         }
     }
 }
@@ -438,7 +711,7 @@ private extension ReaderView {
     static let keyboardBackwardWordStep = 2
 
     static let defaultText = """
-    Rapid serial visual presentation keeps one word in focus at a time. Load text, set the speed, and read without moving your eyes across the page.
+    Rapid serial visual presentation keeps one word in focus at a time. Add a book, set the speed, and read without moving your eyes across the page.
     """
 }
 

@@ -7,6 +7,10 @@ struct ReaderApp: App {
         WindowGroup {
             RootView()
         }
-        .modelContainer(for: SavedReadingSessionRecord.self)
+        .modelContainer(for: [
+            SavedReadingSessionRecord.self,
+            StoredBookRecord.self,
+            StoredBookmarkRecord.self
+        ])
     }
 }

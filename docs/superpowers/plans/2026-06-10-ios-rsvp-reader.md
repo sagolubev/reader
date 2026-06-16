@@ -1,6 +1,11 @@
 # iOS RSVP Reader Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox syntax for tracking.
+
+**Status:** Completed on 2026-06-10. The active OpenSpec checklist for
+`ios-rsvp-reader` reached 39/39 tasks complete, the change validated under
+`openspec validate ios-rsvp-reader --strict`, and the final acceptance notes live
+in `docs/ios-rsvp-reader-acceptance.md`.
 
 **Goal:** Build a native iOS SwiftUI RSVP reader that matches the behavior of `thomaskolmans/rsvp-reading`: PDF/EPUB/text loading, one-word centered reading, ORP highlight, speed controls, pauses, progress, jump, focus mode, and saved session restore.
 
@@ -76,11 +81,11 @@ The source web project is a Svelte/Vite app with these user-facing behaviors to 
 - Create: `ReaderTests/ReaderTests.swift`
 - Create: `ReaderUITests/ReaderUITests.swift`
 
-- [ ] Create a SwiftUI iOS app named `Reader` with bundle id placeholder `com.sigius.reader`.
-- [ ] Set deployment target to iOS 17.0.
-- [ ] Add unit test and UI test targets.
-- [ ] Add package dependency for EPUB parsing only after evaluating the API in Task 6.
-- [ ] Build once:
+- [x] Create a SwiftUI iOS app named `Reader` with bundle id placeholder `com.sigius.reader`.
+- [x] Set deployment target to iOS 17.0.
+- [x] Add unit test and UI test targets.
+- [x] Add package dependency for EPUB parsing only after evaluating the API in Task 6.
+- [x] Build once:
 
 ```bash
 xcodebuild -scheme Reader -destination 'platform=iOS Simulator,name=iPhone 17' build
@@ -94,12 +99,12 @@ Expected: build succeeds with the default app.
 - Create: `Reader/Domain/RSVPTextProcessor.swift`
 - Create: `ReaderTests/RSVPTextProcessorTests.swift`
 
-- [ ] Write tests for whitespace splitting, empty input, punctuation, Unicode, Cyrillic, CJK, Arabic/Hebrew, and leading punctuation.
-- [ ] Implement `parseText(_:) -> [String]`.
-- [ ] Implement `orpLetterOffset(in:) -> String.Index?` using Unicode letter checks.
-- [ ] Implement `splitForDisplay(_:) -> WordDisplayParts`.
-- [ ] Implement `wordFrame(words:centerIndex:frameSize:) -> WordFrame`.
-- [ ] Run:
+- [x] Write tests for whitespace splitting, empty input, punctuation, Unicode, Cyrillic, CJK, Arabic/Hebrew, and leading punctuation.
+- [x] Implement `parseText(_:) -> [String]`.
+- [x] Implement `orpLetterOffset(in:) -> String.Index?` using Unicode letter checks.
+- [x] Implement `splitForDisplay(_:) -> WordDisplayParts`.
+- [x] Implement `wordFrame(words:centerIndex:frameSize:) -> WordFrame`.
+- [x] Run:
 
 ```bash
 xcodebuild test -scheme Reader -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:ReaderTests/RSVPTextProcessorTests
@@ -122,8 +127,8 @@ Acceptance criteria:
 - Create: `Reader/Domain/TimeFormatting.swift`
 - Create: `ReaderTests/WordTimingTests.swift`
 
-- [ ] Write tests for 300 WPM, 600 WPM, sentence punctuation, comma, disabled punctuation pause, invalid WPM fallback, long-word multiplier, periodic pause, and remaining-time formatting.
-- [ ] Implement settings defaults:
+- [x] Write tests for 300 WPM, 600 WPM, sentence punctuation, comma, disabled punctuation pause, invalid WPM fallback, long-word multiplier, periodic pause, and remaining-time formatting.
+- [x] Implement settings defaults:
 
 ```swift
 wordsPerMinute = 300
@@ -137,10 +142,10 @@ wordLengthWPMMultiplier = 5.0
 frameWordCount = 1
 ```
 
-- [ ] Implement `delay(for:settings:) -> Duration`.
-- [ ] Implement `shouldPause(atWordIndex:pauseAfterWords:) -> Bool`.
-- [ ] Implement `formatTimeRemaining(remainingWords:wpm:) -> String`.
-- [ ] Run timing tests.
+- [x] Implement `delay(for:settings:) -> Duration`.
+- [x] Implement `shouldPause(atWordIndex:pauseAfterWords:) -> Bool`.
+- [x] Implement `formatTimeRemaining(remainingWords:wpm:) -> String`.
+- [x] Run timing tests.
 
 Acceptance criteria:
 
@@ -155,10 +160,10 @@ Acceptance criteria:
 - Create: `Reader/Domain/ReadingSession.swift`
 - Create: `ReaderTests/ReadingSessionTests.swift`
 
-- [ ] Model session state: text, words, current index, playing/paused/stopped, progress, current word, current frame, remaining time.
-- [ ] Implement actions: load text, play, pause, resume, stop, restart, step forward, step backward, seek percentage, jump value.
-- [ ] Use a testable clock/timer abstraction so playback tests do not sleep.
-- [ ] Run session tests.
+- [x] Model session state: text, words, current index, playing/paused/stopped, progress, current word, current frame, remaining time.
+- [x] Implement actions: load text, play, pause, resume, stop, restart, step forward, step backward, seek percentage, jump value.
+- [x] Use a testable clock/timer abstraction so playback tests do not sleep.
+- [x] Run session tests.
 
 Acceptance criteria:
 
@@ -177,14 +182,14 @@ Acceptance criteria:
 - Create: `Reader/Features/Reader/PlaybackControlsView.swift`
 - Modify: `Reader/App/RootView.swift`
 
-- [ ] Build black full-screen reader layout.
-- [ ] Add red center marker line.
-- [ ] Center the ORP character exactly at the screen midpoint.
-- [ ] Add single-word and multi-word display modes.
-- [ ] Add bottom progress and controls.
-- [ ] Add focus mode when playing or paused.
-- [ ] Add portrait and landscape previews.
-- [ ] Build and run on simulator.
+- [x] Build black full-screen reader layout.
+- [x] Add red center marker line.
+- [x] Center the ORP character exactly at the screen midpoint.
+- [x] Add single-word and multi-word display modes.
+- [x] Add bottom progress and controls.
+- [x] Add focus mode when playing or paused.
+- [x] Add portrait and landscape previews.
+- [x] Build and run on simulator.
 
 Acceptance criteria:
 
@@ -203,14 +208,14 @@ Acceptance criteria:
 - Create: `ReaderTests/DocumentImportServiceTests.swift`
 - Modify: `Reader/Info.plist`
 
-- [ ] Add paste-text UI.
-- [ ] Add SwiftUI `.fileImporter` for `.pdf` and `.epub`.
-- [ ] Implement PDF text extraction with `PDFDocument(url:)` and `document.string`.
-- [ ] Evaluate EPUB package API against a real EPUB fixture.
-- [ ] Implement EPUB text extraction from spine order.
-- [ ] Normalize extracted text with whitespace collapse and repeated terminal punctuation cleanup.
-- [ ] Add user-visible loading and error states.
-- [ ] Run parser tests and a manual import smoke test.
+- [x] Add paste-text UI.
+- [x] Add SwiftUI `.fileImporter` for `.pdf` and `.epub`.
+- [x] Implement PDF text extraction with `PDFDocument(url:)` and `document.string`.
+- [x] Evaluate EPUB package API against a real EPUB fixture.
+- [x] Implement EPUB text extraction from spine order.
+- [x] Normalize extracted text with whitespace collapse and repeated terminal punctuation cleanup.
+- [x] Add user-visible loading and error states.
+- [x] Run parser tests and a manual import smoke test.
 
 Acceptance criteria:
 
@@ -226,12 +231,12 @@ Acceptance criteria:
 - Modify: `Reader/Features/Reader/ReaderView.swift`
 - Modify: `Reader/Domain/ReaderSettings.swift`
 
-- [ ] Add WPM slider 50-1000 with step 25.
-- [ ] Add WPM presets 200, 300, 400, 500.
-- [ ] Add toggles/sliders for fade, punctuation pause, long-word multiplier, periodic pause, pause duration, and frame word count.
-- [ ] Add touch controls for back/forward and slower/faster.
-- [ ] Add hardware keyboard commands for Space, Escape, arrows, `G`, and Command-S.
-- [ ] Run UI smoke tests.
+- [x] Add WPM slider 50-1000 with step 25.
+- [x] Add WPM presets 200, 300, 400, 500.
+- [x] Add toggles/sliders for fade, punctuation pause, long-word multiplier, periodic pause, pause duration, and frame word count.
+- [x] Add touch controls for back/forward and slower/faster.
+- [x] Add hardware keyboard commands for Space, Escape, arrows, `G`, and Command-S.
+- [x] Run UI smoke tests.
 
 Acceptance criteria:
 
@@ -250,13 +255,13 @@ Acceptance criteria:
 - Modify: `Reader/Features/Reader/ProgressBarView.swift`
 - Modify: `Reader/Features/Reader/ReaderView.swift`
 
-- [ ] Add jump sheet accepting word number or percentage.
-- [ ] Add tappable/draggable progress seek when not playing.
-- [ ] Add SwiftData model containing text, current index, total words, settings, and saved timestamp.
-- [ ] Add save action.
-- [ ] Add startup resume prompt.
-- [ ] Add clear saved session action.
-- [ ] Run persistence and UI tests.
+- [x] Add jump sheet accepting word number or percentage.
+- [x] Add tappable/draggable progress seek when not playing.
+- [x] Add SwiftData model containing text, current index, total words, settings, and saved timestamp.
+- [x] Add save action.
+- [x] Add startup resume prompt.
+- [x] Add clear saved session action.
+- [x] Run persistence and UI tests.
 
 Acceptance criteria:
 
@@ -272,12 +277,12 @@ Acceptance criteria:
 - Modify: `Reader/Domain/ReadingSession.swift`
 - Create: `ReaderUITests/ReaderFlowUITests.swift`
 
-- [ ] Add accessibility labels to icon-only controls.
-- [ ] Respect Reduce Motion by disabling fade animation.
-- [ ] Pause playback on app backgrounding and incoming interruption.
-- [ ] Ensure Dynamic Type does not overlap controls.
-- [ ] Add VoiceOver-friendly labels for current word/progress.
-- [ ] Add screenshot verification on iPhone SE-size and large Pro Max-size simulators.
+- [x] Add accessibility labels to icon-only controls.
+- [x] Respect Reduce Motion by disabling fade animation.
+- [x] Pause playback on app backgrounding and incoming interruption.
+- [x] Ensure Dynamic Type does not overlap controls.
+- [x] Add VoiceOver-friendly labels for current word/progress.
+- [x] Add screenshot verification on iPhone SE-size and large Pro Max-size simulators.
 
 Acceptance criteria:
 
@@ -292,20 +297,20 @@ Acceptance criteria:
 - Create: `docs/ios-rsvp-reader-acceptance.md`
 - Modify: `README.md`
 
-- [ ] Document supported formats, limitations, and controls.
-- [ ] Run full unit and UI suite:
+- [x] Document supported formats, limitations, and controls.
+- [x] Run full unit and UI suite:
 
 ```bash
 xcodebuild test -scheme Reader -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
 
-- [ ] Run archive build:
+- [x] Run archive build:
 
 ```bash
 xcodebuild -scheme Reader -destination 'generic/platform=iOS' archive
 ```
 
-- [ ] Manually test:
+- [x] Manually test:
   - paste text
   - import PDF
   - import EPUB

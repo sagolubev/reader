@@ -7,7 +7,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.black.ignoresSafeArea()
+                ReaderTheme.background.ignoresSafeArea()
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 28) {
@@ -33,7 +33,7 @@ struct SettingsView: View {
                                     }
                                     .buttonStyle(.bordered)
                                     .controlSize(.small)
-                                    .tint(settings.wordsPerMinute == preset ? .red : .white)
+                                    .tint(settings.wordsPerMinute == preset ? ReaderTheme.accent : ReaderTheme.secondaryText)
                                     .accessibilityLabel(presetAccessibilityLabel(for: preset))
                                 }
                             }
@@ -72,7 +72,7 @@ struct SettingsView: View {
 
                         SettingsSection(title: "Effects", systemName: "sparkles") {
                             Toggle("Word fade", isOn: $settings.fadeEnabled)
-                                .tint(.red)
+                                .tint(ReaderTheme.accent)
                                 .accessibilityIdentifier("settings.fade-enabled")
 
                             if settings.fadeEnabled {
@@ -93,7 +93,7 @@ struct SettingsView: View {
 
                         SettingsSection(title: "Pauses", systemName: "pause.fill") {
                             Toggle("Pause on punctuation", isOn: $settings.pauseOnPunctuation)
-                                .tint(.red)
+                                .tint(ReaderTheme.accent)
                                 .accessibilityIdentifier("settings.pause-on-punctuation")
 
                             if settings.pauseOnPunctuation {
@@ -153,7 +153,7 @@ struct SettingsView: View {
                 }
             }
         }
-        .preferredColorScheme(.dark)
+        .tint(ReaderTheme.accent)
         .onAppear {
             settings.normalizeForControls()
         }
@@ -275,7 +275,7 @@ private struct SettingHeader: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
             Text(title)
-                .foregroundStyle(.white)
+                .foregroundStyle(ReaderTheme.primaryText)
             Spacer(minLength: 12)
             Text(valueText)
                 .font(.subheadline.monospacedDigit())

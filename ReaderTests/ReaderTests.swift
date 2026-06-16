@@ -60,6 +60,15 @@ final class ReaderTests: XCTestCase {
     }
 
     @MainActor
+    func testReaderBookmarkControlsViewCanBeCreated() {
+        _ = ReaderBookmarkControlsView(
+            canBookmark: true,
+            isCurrentPositionBookmarked: false,
+            onToggleBookmark: {}
+        )
+    }
+
+    @MainActor
     func testReaderKeyboardShortcutsViewCanBeCreated() {
         _ = ReaderKeyboardShortcutsView(
             onPlayPause: {},
@@ -79,12 +88,34 @@ final class ReaderTests: XCTestCase {
             wordCount: 12,
             isFocusMode: false,
             canJump: true,
-            canSave: true,
-            onLoadContent: {},
+            canBookmark: true,
+            onOpenLibrary: {},
+            onAddBook: {},
+            onOpenBookmarks: {},
             onJump: {},
-            onSave: {},
             onOpenSettings: {},
+            themeMode: .lightWarm,
+            onToggleTheme: {},
             onExitFocusMode: {}
+        )
+    }
+
+    @MainActor
+    func testLibraryViewCanBeCreated() {
+        _ = LibraryView(
+            books: [],
+            activeBookID: nil,
+            onOpenBook: { _ in },
+            onAddBook: { _ in },
+            onDeleteBook: { _ in }
+        )
+    }
+
+    @MainActor
+    func testBookmarksViewCanBeCreated() {
+        _ = BookmarksView(
+            bookmarks: [],
+            onSelectBookmark: { _ in }
         )
     }
 
@@ -110,11 +141,6 @@ final class ReaderTests: XCTestCase {
             onResume: {},
             onStartFresh: {}
         )
-    }
-
-    @MainActor
-    func testLoadContentViewCanBeCreated() {
-        _ = LoadContentView { _ in }
     }
 
     @MainActor

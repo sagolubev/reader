@@ -5,13 +5,16 @@ final class DocumentationSourceTests: XCTestCase {
         let readme = try sourceFile("README.md")
         let expectedSnippets = [
             "# Reader",
-            "Load content",
+            "Add books",
+            "Library",
+            "Bookmarks",
             "RSVP playback",
             "Save and resume",
             "swift test",
             "xcodebuild -scheme Reader",
             "-parallel-testing-enabled NO",
-            "archive"
+            "archive",
+            "docs/ios-rsvp-reader-acceptance.md"
         ]
 
         for expectedSnippet in expectedSnippets {

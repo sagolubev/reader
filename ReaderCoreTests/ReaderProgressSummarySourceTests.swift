@@ -5,7 +5,7 @@ final class ReaderProgressSummarySourceTests: XCTestCase {
         let source = try sourceFile("Reader/App/ReaderView.swift")
 
         XCTAssertTrue(source.contains(".accessibilityIdentifier(\"reader.progress-summary\")"))
-        XCTAssertTrue(source.contains(".foregroundStyle(.white.opacity(0.72))"))
+        XCTAssertTrue(source.contains(".foregroundStyle(ReaderTheme.secondaryText)"))
     }
 
     private func sourceFile(_ path: String) throws -> String {

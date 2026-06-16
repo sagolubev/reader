@@ -4,11 +4,14 @@ struct ReaderHeaderView: View {
     let wordCount: Int
     let isFocusMode: Bool
     let canJump: Bool
-    let canSave: Bool
-    let onLoadContent: () -> Void
+    let canBookmark: Bool
+    let onOpenLibrary: () -> Void
+    let onAddBook: () -> Void
+    let onOpenBookmarks: () -> Void
     let onJump: () -> Void
-    let onSave: () -> Void
     let onOpenSettings: () -> Void
+    let themeMode: ReaderThemeMode
+    let onToggleTheme: () -> Void
     let onExitFocusMode: () -> Void
 
     var body: some View {
@@ -23,10 +26,10 @@ struct ReaderHeaderView: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(.white)
+                .foregroundStyle(ReaderTheme.controlForeground)
                 .background(
                     Circle()
-                        .fill(Color.white.opacity(0.14))
+                        .fill(ReaderTheme.controlFill)
                 )
                 .accessibilityLabel("Exit focus mode")
                 .accessibilityIdentifier("reader.exit-focus")
@@ -34,7 +37,7 @@ struct ReaderHeaderView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Reader")
                         .font(.headline)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(ReaderTheme.primaryText)
 
                     Text("\(wordCount) words")
                         .font(.subheadline)
@@ -44,12 +47,27 @@ struct ReaderHeaderView: View {
 
                 Spacer()
 
-                HStack(spacing: 10) {
+                HStack(spacing: 6) {
+                    HeaderIconButton(
+                        systemName: "books.vertical",
+                        accessibilityLabel: "Open library",
+                        accessibilityIdentifier: "reader.open-library",
+                        action: onOpenLibrary
+                    )
+
                     HeaderIconButton(
                         systemName: "doc.badge.plus",
-                        accessibilityLabel: "Load content",
-                        accessibilityIdentifier: "reader.load-content",
-                        action: onLoadContent
+                        accessibilityLabel: "Add book",
+                        accessibilityIdentifier: "reader.add-book",
+                        action: onAddBook
+                    )
+
+                    HeaderIconButton(
+                        systemName: "list.bullet.rectangle",
+                        accessibilityLabel: "Show bookmarks",
+                        accessibilityIdentifier: "reader.bookmarks",
+                        isEnabled: canBookmark,
+                        action: onOpenBookmarks
                     )
 
                     HeaderIconButton(
@@ -61,18 +79,17 @@ struct ReaderHeaderView: View {
                     )
 
                     HeaderIconButton(
-                        systemName: "square.and.arrow.down",
-                        accessibilityLabel: "Save session",
-                        accessibilityIdentifier: "reader.save-session",
-                        isEnabled: canSave,
-                        action: onSave
-                    )
-
-                    HeaderIconButton(
                         systemName: "gearshape.fill",
                         accessibilityLabel: "Settings",
                         accessibilityIdentifier: "reader.settings",
                         action: onOpenSettings
+                    )
+
+                    HeaderIconButton(
+                        systemName: themeMode.toggleSystemName,
+                        accessibilityLabel: themeMode.toggleAccessibilityLabel,
+                        accessibilityIdentifier: "reader.toggle-theme",
+                        action: onToggleTheme
                     )
                 }
             }
@@ -93,14 +110,14 @@ private struct HeaderIconButton: View {
         Button(action: action) {
             Image(systemName: systemName)
                 .font(.system(size: 18, weight: .semibold))
-                .frame(width: 44, height: 44)
+                .frame(width: 38, height: 38)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .foregroundStyle(.white)
+        .foregroundStyle(ReaderTheme.controlForeground)
         .background(
             Circle()
-                .fill(Color.white.opacity(0.14))
+                .fill(ReaderTheme.controlFill)
         )
         .opacity(isEnabled ? 1 : 0.35)
         .disabled(!isEnabled)
@@ -111,28 +128,34 @@ private struct HeaderIconButton: View {
 
 #Preview {
     ZStack {
-        Color.black.ignoresSafeArea()
+        ReaderTheme.background.ignoresSafeArea()
         VStack(spacing: 24) {
             ReaderHeaderView(
                 wordCount: 120,
                 isFocusMode: false,
                 canJump: true,
-                canSave: true,
-                onLoadContent: {},
+                canBookmark: true,
+                onOpenLibrary: {},
+                onAddBook: {},
+                onOpenBookmarks: {},
                 onJump: {},
-                onSave: {},
                 onOpenSettings: {},
+                themeMode: .lightWarm,
+                onToggleTheme: {},
                 onExitFocusMode: {}
             )
             ReaderHeaderView(
                 wordCount: 120,
                 isFocusMode: true,
                 canJump: true,
-                canSave: true,
-                onLoadContent: {},
+                canBookmark: true,
+                onOpenLibrary: {},
+                onAddBook: {},
+                onOpenBookmarks: {},
                 onJump: {},
-                onSave: {},
                 onOpenSettings: {},
+                themeMode: .dark,
+                onToggleTheme: {},
                 onExitFocusMode: {}
             )
         }

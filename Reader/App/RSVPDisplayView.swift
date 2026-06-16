@@ -8,7 +8,7 @@ struct RSVPDisplayView: View {
     @State private var displayOpacity = 1.0
 
     private let displayFontSize: CGFloat = 58
-    private let markerColor = Color(red: 0.92, green: 0.12, blue: 0.12)
+    private let markerColor = ReaderTheme.accent
 
     init(word: String) {
         self.init(
@@ -54,7 +54,7 @@ struct RSVPDisplayView: View {
             .frame(width: proxy.size.width, height: proxy.size.height)
         }
         .font(.system(size: displayFontSize, weight: .medium, design: .monospaced))
-        .foregroundStyle(.white)
+        .foregroundStyle(ReaderTheme.primaryText)
         .lineLimit(1)
         .minimumScaleFactor(0.28)
         .allowsTightening(true)
@@ -140,7 +140,7 @@ struct RSVPDisplayView: View {
 
 #Preview {
     ZStack {
-        Color.black.ignoresSafeArea()
+        ReaderTheme.background.ignoresSafeArea()
         RSVPDisplayView(word: "reading")
             .padding()
     }

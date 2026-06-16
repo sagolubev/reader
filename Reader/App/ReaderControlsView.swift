@@ -5,7 +5,7 @@ struct ReaderProgressView: View {
     let isSeekingEnabled: Bool
     let onSeek: (Double) -> Void
 
-    private let markerColor = Color(red: 0.92, green: 0.12, blue: 0.12)
+    private let markerColor = ReaderTheme.accent
 
     var body: some View {
         GeometryReader { proxy in
@@ -13,7 +13,7 @@ struct ReaderProgressView: View {
 
             ZStack(alignment: .leading) {
                 Capsule()
-                    .fill(Color.white.opacity(0.16))
+                    .fill(ReaderTheme.progressTrack)
 
                 Capsule()
                     .fill(markerColor)
@@ -147,7 +147,7 @@ struct ReaderTouchControlsView: View {
 
             Text("\(wordsPerMinute) WPM")
                 .font(.caption.monospacedDigit().weight(.semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(ReaderTheme.primaryText)
                 .frame(width: 82, height: 40)
                 .accessibilityLabel("Reading speed")
                 .accessibilityValue("\(wordsPerMinute) words per minute")
@@ -173,6 +173,23 @@ struct ReaderTouchControlsView: View {
         }
         .frame(maxWidth: .infinity)
         .accessibilityIdentifier("reader.touch-controls")
+    }
+}
+
+struct ReaderBookmarkControlsView: View {
+    let canBookmark: Bool
+    let isCurrentPositionBookmarked: Bool
+    let onToggleBookmark: () -> Void
+
+    var body: some View {
+        ControlIconButton(
+            systemName: isCurrentPositionBookmarked ? "bookmark.fill" : "bookmark",
+            accessibilityLabel: isCurrentPositionBookmarked ? "Remove bookmark" : "Add bookmark",
+            accessibilityIdentifier: "reader.toggle-bookmark",
+            size: 58,
+            isEnabled: canBookmark,
+            action: onToggleBookmark
+        )
     }
 }
 
@@ -231,10 +248,10 @@ private struct ControlIconButton: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .foregroundStyle(isProminent ? .black : .white)
+        .foregroundStyle(isProminent ? ReaderTheme.primaryControlForeground : ReaderTheme.controlForeground)
         .background(
             Circle()
-                .fill(isProminent ? Color.white : Color.white.opacity(0.14))
+                .fill(isProminent ? ReaderTheme.primaryControlFill : ReaderTheme.controlFill)
         )
         .opacity(isEnabled ? 1 : 0.35)
         .disabled(!isEnabled)
@@ -256,7 +273,7 @@ private extension View {
 
 #Preview {
     ZStack {
-        Color.black.ignoresSafeArea()
+        ReaderTheme.background.ignoresSafeArea()
         VStack(spacing: 28) {
             ReaderProgressView(progress: 0.42, isSeekingEnabled: true) { _ in }
             PlaybackControlsView(

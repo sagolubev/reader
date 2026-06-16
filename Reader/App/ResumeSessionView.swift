@@ -10,13 +10,13 @@ struct ResumeSessionView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.black.ignoresSafeArea()
+                ReaderTheme.background.ignoresSafeArea()
 
                 VStack(alignment: .leading, spacing: 22) {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Resume Session")
                             .font(.title2.weight(.semibold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(ReaderTheme.primaryText)
 
                         Text(sessionSummary)
                             .font(.subheadline.monospacedDigit())
@@ -47,7 +47,7 @@ struct ResumeSessionView: View {
             .navigationTitle("Saved Session")
             .navigationBarTitleDisplayMode(.inline)
         }
-        .preferredColorScheme(.dark)
+        .tint(ReaderTheme.accent)
         .accessibilityIdentifier("resume-session.sheet")
     }
 
