@@ -244,6 +244,13 @@ final class BookLibraryStore {
         return snapshot
     }
 
+    func deleteBookmark(bookID: UUID, wordIndex: Int) throws {
+        if let existing = try bookmarkRecord(bookID: bookID, wordIndex: wordIndex) {
+            modelContext.delete(existing)
+            try modelContext.save()
+        }
+    }
+
     func bookmarks(for bookID: UUID) throws -> [BookmarkSnapshot] {
         let descriptor = FetchDescriptor<StoredBookmarkRecord>(
             predicate: #Predicate { $0.bookID == bookID },

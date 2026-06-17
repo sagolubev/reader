@@ -115,7 +115,8 @@ final class ReaderTests: XCTestCase {
     func testBookmarksViewCanBeCreated() {
         _ = BookmarksView(
             bookmarks: [],
-            onSelectBookmark: { _ in }
+            onSelectBookmark: { _ in },
+            onDeleteBookmark: { _ in }
         )
     }
 

@@ -12,6 +12,12 @@ final class ProjectConfigurationSourceTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: appIconPath.path))
     }
 
+    func testReaderTargetUsesRussianDisplayName() throws {
+        let project = try sourceFile("Reader.xcodeproj/project.pbxproj")
+
+        XCTAssertTrue(project.contains("INFOPLIST_KEY_CFBundleDisplayName = \"Быстрочиталка\";"))
+    }
+
     func testReaderTargetDeclaresIPadOrientationsForArchiveValidation() throws {
         let project = try sourceFile("Reader.xcodeproj/project.pbxproj")
 

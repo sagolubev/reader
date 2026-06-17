@@ -66,6 +66,30 @@ final class UISmokeSourceTests: XCTestCase {
         XCTAssertTrue(bookmarkControlsSource.contains("size: 58"))
     }
 
+    func testBookmarksSheetExposesSwipeAndLongPressDelete() throws {
+        let bookmarksSource = try sourceFile("Reader/App/BookmarksView.swift")
+        let readerViewSource = try sourceFile("Reader/App/ReaderView.swift")
+
+        XCTAssertTrue(bookmarksSource.contains("onDeleteBookmark: (BookmarkSnapshot) -> Void"))
+        XCTAssertTrue(bookmarksSource.contains(".swipeActions"))
+        XCTAssertTrue(bookmarksSource.contains(".contextMenu"))
+        XCTAssertTrue(bookmarksSource.contains("Button(role: .destructive)"))
+        XCTAssertTrue(bookmarksSource.contains("onDeleteBookmark(bookmark)"))
+        XCTAssertTrue(bookmarksSource.contains("Label(\"Delete\", systemImage: \"trash\")"))
+        XCTAssertTrue(readerViewSource.contains("onDeleteBookmark: deleteBookmark"))
+        XCTAssertTrue(readerViewSource.contains("private func deleteBookmark(_ bookmark: BookmarkSnapshot)"))
+        XCTAssertTrue(readerViewSource.contains("libraryStore.deleteBookmark("))
+    }
+
+    func testReaderUsesRussianDefaultRSVPTextWhenNoBooksExist() throws {
+        let readerViewSource = try sourceFile("Reader/App/ReaderView.swift")
+
+        XCTAssertTrue(readerViewSource.contains("Быстрое последовательное визуальное предъявление"))
+        XCTAssertTrue(readerViewSource.contains("Университета Карнеги — Меллон"))
+        XCTAssertTrue(readerViewSource.contains("720 слов в минуту"))
+        XCTAssertFalse(readerViewSource.contains("Rapid serial visual presentation keeps one word"))
+    }
+
     private func sourceFile(_ path: String) throws -> String {
         let testFile = URL(fileURLWithPath: #filePath)
         let repoRoot = testFile

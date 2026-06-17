@@ -5,6 +5,7 @@ struct BookmarksView: View {
 
     let bookmarks: [BookmarkSnapshot]
     let onSelectBookmark: (BookmarkSnapshot) -> Void
+    let onDeleteBookmark: (BookmarkSnapshot) -> Void
 
     var body: some View {
         NavigationStack {
@@ -38,6 +39,12 @@ struct BookmarksView: View {
                             .padding(.vertical, 6)
                         }
                         .accessibilityIdentifier("bookmarks.bookmark")
+                        .swipeActions {
+                            deleteBookmarkButton(bookmark)
+                        }
+                        .contextMenu {
+                            deleteBookmarkButton(bookmark)
+                        }
                     }
                     .scrollContentBackground(.hidden)
                     .accessibilityIdentifier("bookmarks.list")
@@ -56,6 +63,14 @@ struct BookmarksView: View {
         .tint(ReaderTheme.accent)
         .accessibilityIdentifier("bookmarks.sheet")
     }
+
+    private func deleteBookmarkButton(_ bookmark: BookmarkSnapshot) -> some View {
+        Button(role: .destructive) {
+            onDeleteBookmark(bookmark)
+        } label: {
+            Label("Delete", systemImage: "trash")
+        }
+    }
 }
 
 #Preview {
@@ -67,6 +82,7 @@ struct BookmarksView: View {
                 words: ["zero", "one", "two", "three", "four"]
             )
         ],
-        onSelectBookmark: { _ in }
+        onSelectBookmark: { _ in },
+        onDeleteBookmark: { _ in }
     )
 }

@@ -152,7 +152,8 @@ struct ReaderView: View {
             case .bookmarks:
                 BookmarksView(
                     bookmarks: bookmarks,
-                    onSelectBookmark: jumpToBookmark
+                    onSelectBookmark: jumpToBookmark,
+                    onDeleteBookmark: deleteBookmark
                 )
             case .settings:
                 SettingsView(settings: settingsBinding)
@@ -415,6 +416,24 @@ struct ReaderView: View {
         persistActiveBook()
         refreshBookmarkState()
         playbackLoopID += 1
+    }
+
+    @MainActor
+    private func deleteBookmark(_ bookmark: BookmarkSnapshot) {
+        guard let libraryStore, bookmark.bookID == activeBookID else {
+            return
+        }
+
+        do {
+            try libraryStore.deleteBookmark(
+                bookID: bookmark.bookID,
+                wordIndex: bookmark.wordIndex
+            )
+            refreshBookmarks()
+            refreshBookmarkState()
+        } catch {
+            persistenceErrorMessage = error.localizedDescription
+        }
     }
 
     @MainActor
@@ -711,7 +730,9 @@ private extension ReaderView {
     static let keyboardBackwardWordStep = 2
 
     static let defaultText = """
-    Rapid serial visual presentation keeps one word in focus at a time. Add a book, set the speed, and read without moving your eyes across the page.
+    Быстрое последовательное визуальное предъявление (англ. Rapid serial visual presentation, RSVP) — способ показа текстовой информации на дисплее, при котором все слова показываются быстро одно за другим в фиксированной области экрана (обычно в центре). При этом большой объём текста может быть показан на дисплее очень маленького размера, например, на экране миниатюрного мобильного телефона или даже в электронных наручных часах. Кроме того, данный метод позволяет воспринимать текст очень быстро за счёт отсутствия необходимости движения глаз, что нашло своё применение в скорочтении, в устройствах для людей с нарушениями зрения и глазодвигательной активности, и даже при лечении дислексии.
+
+    Учёные из Университета Карнеги — Меллон установили, что быстрое последовательное визуальное предъявление позволяет достичь пиковой скорости чтения на английском языке в 720 слов в минуту (12 в секунду). Или, что также очень важно, позволяет повысить скорость чтения на 33 % по сравнению с нормальной без существенной потери понимания материала.
     """
 }
 

@@ -189,6 +189,49 @@ final class BookLibraryStoreTests: XCTestCase {
         XCTAssertEqual(try store.bookmarks(for: second.id).map(\.wordIndex), [1])
     }
 
+    func testDeleteBookmarkRemovesOnlyMatchingBookmark() throws {
+        let store = try makeStore()
+        let first = try store.createBook(
+            title: "First",
+            sourceKind: .pastedText,
+            text: "zero one two three four five",
+            settings: ReaderSettings(),
+            now: Date(timeIntervalSince1970: 100)
+        )
+        let second = try store.createBook(
+            title: "Second",
+            sourceKind: .pastedText,
+            text: "alpha beta gamma",
+            settings: ReaderSettings(),
+            now: Date(timeIntervalSince1970: 200)
+        )
+
+        _ = try store.toggleBookmark(
+            bookID: first.id,
+            wordIndex: 2,
+            words: RSVPTextProcessor.parseText(first.text),
+            now: Date(timeIntervalSince1970: 300)
+        )
+        _ = try store.toggleBookmark(
+            bookID: first.id,
+            wordIndex: 4,
+            words: RSVPTextProcessor.parseText(first.text),
+            now: Date(timeIntervalSince1970: 350)
+        )
+        _ = try store.toggleBookmark(
+            bookID: second.id,
+            wordIndex: 2,
+            words: RSVPTextProcessor.parseText(second.text),
+            now: Date(timeIntervalSince1970: 400)
+        )
+
+        try store.deleteBookmark(bookID: first.id, wordIndex: 2)
+
+        XCTAssertFalse(try store.isBookmarked(bookID: first.id, wordIndex: 2))
+        XCTAssertEqual(try store.bookmarks(for: first.id).map(\.wordIndex), [4])
+        XCTAssertEqual(try store.bookmarks(for: second.id).map(\.wordIndex), [2])
+    }
+
     private func makeStore() throws -> BookLibraryStore {
         let schema = Schema([StoredBookRecord.self, StoredBookmarkRecord.self])
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
