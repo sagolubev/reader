@@ -282,10 +282,9 @@ struct ReaderView: View {
 
     @MainActor
     private func importLibraryBookFile(_ url: URL) {
-        Task {
-            await Task.yield()
+        let didAccessSecurityScope = url.startAccessingSecurityScopedResource()
 
-            let didAccessSecurityScope = url.startAccessingSecurityScopedResource()
+        Task { @MainActor in
             defer {
                 if didAccessSecurityScope {
                     url.stopAccessingSecurityScopedResource()
@@ -306,14 +305,13 @@ struct ReaderView: View {
         }
     }
 
+    @MainActor
     private func handleBookFileSelection(_ result: Result<[URL], Error>) {
         guard case .success(let urls) = result, let url = urls.first else {
             return
         }
 
-        Task { @MainActor in
-            importLibraryBookFile(url)
-        }
+        importLibraryBookFile(url)
     }
 
     @MainActor

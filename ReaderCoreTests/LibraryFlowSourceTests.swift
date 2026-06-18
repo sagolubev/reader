@@ -84,6 +84,28 @@ final class LibraryFlowSourceTests: XCTestCase {
         XCTAssertFalse(readerView.contains("presentedSheet = .loadContent"))
     }
 
+    func testReaderFileSelectionStartsSecurityScopedAccessBeforeAsyncImport() throws {
+        let readerView = try sourceFile("Reader/App/ReaderView.swift")
+        let importSource = try sourceSlice(
+            readerView,
+            from: "private func importLibraryBookFile(_ url: URL)",
+            to: "private func handleBookFileSelection"
+        )
+        let handleSelectionSource = try sourceSlice(
+            readerView,
+            from: "private func handleBookFileSelection",
+            to: "private func openLibraryBook"
+        )
+
+        let startAccess = try XCTUnwrap(importSource.range(of: "url.startAccessingSecurityScopedResource()"))
+        let asyncImport = try XCTUnwrap(importSource.range(of: "Task {"))
+
+        XCTAssertTrue(startAccess.lowerBound < asyncImport.lowerBound)
+        XCTAssertFalse(importSource.contains("await Task.yield()"))
+        XCTAssertTrue(handleSelectionSource.contains("importLibraryBookFile(url)"))
+        XCTAssertFalse(handleSelectionSource.contains("Task { @MainActor"))
+    }
+
     private func sourceFile(_ path: String) throws -> String {
         let testFile = URL(fileURLWithPath: #filePath)
         let repoRoot = testFile
@@ -91,5 +113,11 @@ final class LibraryFlowSourceTests: XCTestCase {
             .deletingLastPathComponent()
         let sourceURL = repoRoot.appendingPathComponent(path)
         return try String(contentsOf: sourceURL, encoding: .utf8)
+    }
+
+    private func sourceSlice(_ source: String, from startMarker: String, to endMarker: String) throws -> String {
+        let start = try XCTUnwrap(source.range(of: startMarker))
+        let end = try XCTUnwrap(source.range(of: endMarker, range: start.upperBound..<source.endIndex))
+        return String(source[start.lowerBound..<end.lowerBound])
     }
 }
