@@ -49,6 +49,13 @@ final class LibraryFlowSourceTests: XCTestCase {
         XCTAssertTrue(libraryView.contains("handleFileSelection"))
     }
 
+    func testBookFilePickerUsesContentFallbackForProviderSpecificBookTypes() throws {
+        let supportedTypes = try sourceFile("Reader/App/SupportedBookFileTypes.swift")
+
+        XCTAssertTrue(supportedTypes.contains("static let documentTypes: [UTType] = [.pdf, .epubDocument, .content]"))
+        XCTAssertFalse(supportedTypes.contains("com.apple.ibooks.epub"))
+    }
+
     func testLibraryAddBookUsesDirectFileSelectionInsteadOfLoadContentSheet() throws {
         let readerView = try sourceFile("Reader/App/ReaderView.swift")
 

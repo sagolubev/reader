@@ -1,7 +1,7 @@
 import UniformTypeIdentifiers
 
 enum SupportedBookFileTypes {
-    static let documentTypes: [UTType] = [.pdf, .epubDocument]
+    static let documentTypes: [UTType] = [.pdf, .epubDocument, .content]
 }
 
 extension UTType {
