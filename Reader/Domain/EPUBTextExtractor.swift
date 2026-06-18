@@ -3,21 +3,16 @@ import ZIPFoundation
 
 struct EPUBTextExtractor: EPUBTextExtracting {
     func extractText(from url: URL) throws -> String {
-        let archive: Archive
-        do {
-            archive = try Archive(url: url, accessMode: .read)
-        } catch {
-            throw DocumentImportError.epubParseFailed
-        }
+        let container = try EPUBContainer(url: url)
 
-        let packagePath = try packagePath(in: archive)
-        let packageData = try data(for: packagePath, in: archive)
+        let packagePath = try packagePath(in: container)
+        let packageData = try data(for: packagePath, in: container)
         let package = try parsePackage(packageData)
 
         let text = try package.spine
             .compactMap { package.manifest[$0] }
             .map { resolve($0, relativeTo: packagePath) }
-            .map { try chapterText(at: $0, in: archive) }
+            .map { try chapterText(at: $0, in: container) }
             .joined(separator: " ")
 
         guard !DocumentImportService.normalizeText(text).isEmpty else {
@@ -27,8 +22,8 @@ struct EPUBTextExtractor: EPUBTextExtracting {
         return text
     }
 
-    private func packagePath(in archive: Archive) throws -> String {
-        let containerData = try data(for: "META-INF/container.xml", in: archive)
+    private func packagePath(in container: EPUBContainer) throws -> String {
+        let containerData = try data(for: "META-INF/container.xml", in: container)
         let delegate = ContainerXMLDelegate()
         try parse(containerData, with: delegate)
 
@@ -50,23 +45,15 @@ struct EPUBTextExtractor: EPUBTextExtracting {
         return PackageDocument(manifest: delegate.manifest, spine: delegate.spine)
     }
 
-    private func chapterText(at path: String, in archive: Archive) throws -> String {
-        let chapterData = try data(for: path, in: archive)
+    private func chapterText(at path: String, in container: EPUBContainer) throws -> String {
+        let chapterData = try data(for: path, in: container)
         let delegate = XHTMLTextDelegate()
         try parse(chapterData, with: delegate)
         return delegate.text
     }
 
-    private func data(for path: String, in archive: Archive) throws -> Data {
-        guard let entry = archive[path] else {
-            throw DocumentImportError.epubParseFailed
-        }
-
-        var data = Data()
-        _ = try archive.extract(entry) { chunk in
-            data.append(chunk)
-        }
-        return data
+    private func data(for path: String, in container: EPUBContainer) throws -> Data {
+        try container.data(for: normalizedResourcePath(path))
     }
 
     private func parse(_ data: Data, with delegate: XMLParserDelegate) throws {
@@ -79,17 +66,92 @@ struct EPUBTextExtractor: EPUBTextExtracting {
     }
 
     private func resolve(_ href: String, relativeTo packagePath: String) -> String {
-        let packageDirectory = packagePath
-            .split(separator: "/")
-            .dropLast()
-            .joined(separator: "/")
-        let cleanHref = href.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        let packageDirectory = (packagePath as NSString).deletingLastPathComponent
+        let cleanHref = normalizedResourcePath(href)
 
         guard !packageDirectory.isEmpty else {
             return cleanHref
         }
 
-        return "\(packageDirectory)/\(cleanHref)"
+        return normalizedResourcePath("\(packageDirectory)/\(cleanHref)")
+    }
+
+    private func normalizedResourcePath(_ path: String) -> String {
+        let withoutFragment = String(path.split(
+            separator: "#",
+            maxSplits: 1,
+            omittingEmptySubsequences: false
+        ).first ?? "")
+        let withoutQuery = String(withoutFragment.split(
+            separator: "?",
+            maxSplits: 1,
+            omittingEmptySubsequences: false
+        ).first ?? "")
+        let decoded = withoutQuery.removingPercentEncoding ?? withoutQuery
+        let standardized = (decoded as NSString).standardizingPath
+        return standardized.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+    }
+}
+
+private enum EPUBContainer {
+    case archive(Archive)
+    case directory(URL)
+
+    init(url: URL) throws {
+        var isDirectory = ObjCBool(false)
+        if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory),
+           isDirectory.boolValue {
+            self = .directory(url.standardizedFileURL)
+            return
+        }
+
+        do {
+            self = .archive(try Archive(url: url, accessMode: .read))
+        } catch {
+            throw DocumentImportError.epubParseFailed
+        }
+    }
+
+    func data(for path: String) throws -> Data {
+        switch self {
+        case .archive(let archive):
+            return try archiveData(for: path, in: archive)
+        case .directory(let rootURL):
+            return try directoryData(for: path, in: rootURL)
+        }
+    }
+
+    private func archiveData(for path: String, in archive: Archive) throws -> Data {
+        guard let entry = archive[path] else {
+            throw DocumentImportError.epubParseFailed
+        }
+
+        var data = Data()
+        do {
+            _ = try archive.extract(entry) { chunk in
+                data.append(chunk)
+            }
+        } catch {
+            throw DocumentImportError.epubParseFailed
+        }
+        return data
+    }
+
+    private func directoryData(for path: String, in rootURL: URL) throws -> Data {
+        let root = rootURL.standardizedFileURL
+        let fileURL = root.appendingPathComponent(path).standardizedFileURL
+        let rootPath = root.path
+        let filePath = fileURL.path
+
+        guard filePath == rootPath || filePath.hasPrefix(rootPath + "/") else {
+            throw DocumentImportError.epubParseFailed
+        }
+
+        do {
+            return try Data(contentsOf: fileURL)
+        } catch {
+            throw DocumentImportError.epubParseFailed
+        }
     }
 }
 
