@@ -292,7 +292,10 @@ struct ReaderView: View {
             }
 
             do {
-                let text = try DocumentImportService().importText(from: url)
+                let importTask = Task.detached(priority: .userInitiated) {
+                    try DocumentImportService().importText(from: url)
+                }
+                let text = try await importTask.value
                 loadImportedContent(ImportedContent(
                     title: url.deletingPathExtension().lastPathComponent,
                     sourceKind: BookSourceKind(url: url),

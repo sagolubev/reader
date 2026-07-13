@@ -71,6 +71,13 @@ final class LibraryFlowSourceTests: XCTestCase {
         XCTAssertTrue(readerView.contains("loadImportedContent(ImportedContent("))
     }
 
+    func testReaderImportsDocumentsAwayFromMainActor() throws {
+        let readerView = try sourceFile("Reader/App/ReaderView.swift")
+
+        XCTAssertTrue(readerView.contains("Task.detached(priority: .userInitiated)"))
+        XCTAssertTrue(readerView.contains("try await importTask.value"))
+    }
+
     func testReaderHeaderAddBookUsesDirectFileSelectionInsteadOfLoadContentSheet() throws {
         let readerView = try sourceFile("Reader/App/ReaderView.swift")
         let headerView = try sourceFile("Reader/App/ReaderHeaderView.swift")

@@ -59,6 +59,18 @@ final class DocumentImportServiceTests: XCTestCase {
 
         XCTAssertEqual(text, "Hello world! Wait.")
     }
+
+    func testImportRejectsNormalizedTextAboveCharacterLimit() {
+        let service = DocumentImportService(
+            pdfExtractor: RecordingPDFExtractor(result: "12345"),
+            epubExtractor: RecordingEPUBExtractor(result: "unused"),
+            limits: ReaderResourceLimits(maxExtractedCharacters: 4)
+        )
+
+        XCTAssertThrowsError(try service.importText(from: URL(fileURLWithPath: "/tmp/book.pdf"))) {
+            XCTAssertEqual($0 as? DocumentImportError, .resourceLimitExceeded)
+        }
+    }
 }
 
 private final class RecordingPDFExtractor: PDFTextExtracting {

@@ -3,6 +3,20 @@ import ZIPFoundation
 @testable import ReaderCore
 
 final class EPUBTextExtractorTests: XCTestCase {
+    func testDirectoryResourcesUseBoundedStreamingReads() throws {
+        let testFile = URL(fileURLWithPath: #filePath)
+        let repoRoot = testFile
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let source = try String(
+            contentsOf: repoRoot.appendingPathComponent("Reader/Domain/EPUBTextExtractor.swift"),
+            encoding: .utf8
+        )
+
+        XCTAssertTrue(source.contains("FileHandle(forReadingFrom: fileURL)"))
+        XCTAssertFalse(source.contains("Data(contentsOf: fileURL)"))
+    }
+
     func testExtractTextReadsSpineDocumentsInOrder() throws {
         let url = try EPUBFixture.writeEPUB(
             spine: ["chapter2", "chapter1"],
@@ -72,6 +86,80 @@ final class EPUBTextExtractorTests: XCTestCase {
 
         XCTAssertThrowsError(try EPUBTextExtractor().extractText(from: url)) { error in
             XCTAssertEqual(error as? DocumentImportError, .emptyExtractedText)
+        }
+    }
+
+    func testExtractTextRejectsOversizedArchiveResource() throws {
+        let url = try EPUBFixture.writeEPUB(
+            spine: ["chapter1"],
+            chapters: [
+                "chapter1": "<html><body>\(String(repeating: "a", count: 2_048))</body></html>"
+            ]
+        )
+        let limits = ReaderResourceLimits(
+            maxEPUBResourceBytes: 1_024,
+            maxEPUBTotalBytes: 8_192
+        )
+
+        XCTAssertThrowsError(try EPUBTextExtractor(limits: limits).extractText(from: url)) {
+            XCTAssertEqual($0 as? DocumentImportError, .resourceLimitExceeded)
+        }
+    }
+
+    func testExtractTextRejectsOversizedDirectoryResource() throws {
+        let url = try EPUBFixture.writeEPUBDirectory(
+            spine: ["chapter1"],
+            manifest: ["chapter1": "chapter1.xhtml"],
+            files: [
+                "chapter1.xhtml": "<html><body>\(String(repeating: "a", count: 2_048))</body></html>"
+            ]
+        )
+        let limits = ReaderResourceLimits(
+            maxEPUBResourceBytes: 1_024,
+            maxEPUBTotalBytes: 8_192
+        )
+
+        XCTAssertThrowsError(try EPUBTextExtractor(limits: limits).extractText(from: url)) {
+            XCTAssertEqual($0 as? DocumentImportError, .resourceLimitExceeded)
+        }
+    }
+
+    func testExtractTextRejectsCumulativeEPUBResources() throws {
+        let chapter = "<html><body>\(String(repeating: "a", count: 700))</body></html>"
+        let url = try EPUBFixture.writeEPUB(
+            spine: ["chapter1", "chapter2"],
+            chapters: ["chapter1": chapter, "chapter2": chapter]
+        )
+        let limits = ReaderResourceLimits(
+            maxEPUBResourceBytes: 2_048,
+            maxEPUBTotalBytes: 1_500
+        )
+
+        XCTAssertThrowsError(try EPUBTextExtractor(limits: limits).extractText(from: url)) {
+            XCTAssertEqual($0 as? DocumentImportError, .resourceLimitExceeded)
+        }
+    }
+
+    func testExtractTextRejectsDirectorySymlinkOutsidePackageRoot() throws {
+        let url = try EPUBFixture.writeEPUBDirectory(
+            spine: ["chapter1"],
+            manifest: ["chapter1": "chapter1.xhtml"],
+            files: ["chapter1.xhtml": "<html><body>inside</body></html>"]
+        )
+        let outsideURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("xhtml")
+        try "<html><body>outside</body></html>".write(
+            to: outsideURL,
+            atomically: true,
+            encoding: .utf8
+        )
+        let chapterURL = url.appendingPathComponent("OEBPS/chapter1.xhtml")
+        try FileManager.default.removeItem(at: chapterURL)
+        try FileManager.default.createSymbolicLink(at: chapterURL, withDestinationURL: outsideURL)
+
+        XCTAssertThrowsError(try EPUBTextExtractor().extractText(from: url)) {
+            XCTAssertEqual($0 as? DocumentImportError, .epubParseFailed)
         }
     }
 }

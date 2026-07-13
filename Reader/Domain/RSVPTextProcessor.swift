@@ -13,12 +13,52 @@ struct WordFrame: Equatable {
 
 enum RSVPTextProcessor {
     static func parseText(_ text: String) -> [String] {
-        text
-            .split(whereSeparator: { $0.isWhitespace })
-            .map(String.init)
+        (try? parseText(text, limits: .default)) ?? []
+    }
+
+    static func parseText(
+        _ text: String,
+        limits: ReaderResourceLimits
+    ) throws -> [String] {
+        guard text.utf8.count <= limits.maxDocumentBytes,
+              text.count <= limits.maxExtractedCharacters else {
+            throw DocumentImportError.resourceLimitExceeded
+        }
+
+        let subsequences = text.split(
+            maxSplits: limits.maxTokenCount,
+            omittingEmptySubsequences: true,
+            whereSeparator: { $0.isWhitespace }
+        )
+        guard subsequences.count <= limits.maxTokenCount else {
+            throw DocumentImportError.resourceLimitExceeded
+        }
+
+        var words: [String] = []
+        words.reserveCapacity(subsequences.count)
+        for subsequence in subsequences {
+            guard subsequence.utf8.count <= limits.maxTokenBytes,
+                  subsequence.count <= limits.maxTokenCharacters else {
+                throw DocumentImportError.resourceLimitExceeded
+            }
+            words.append(String(subsequence))
+        }
+        return words
     }
 
     static func splitForDisplay(_ word: String) -> WordDisplayParts {
+        (try? splitForDisplay(word, limits: .default))
+            ?? WordDisplayParts(before: "", orp: "…", after: "")
+    }
+
+    static func splitForDisplay(
+        _ word: String,
+        limits: ReaderResourceLimits
+    ) throws -> WordDisplayParts {
+        guard word.utf8.count <= limits.maxTokenBytes,
+              word.count <= limits.maxTokenCharacters else {
+            throw DocumentImportError.resourceLimitExceeded
+        }
         guard !word.isEmpty else {
             return WordDisplayParts(before: "", orp: "", after: "")
         }

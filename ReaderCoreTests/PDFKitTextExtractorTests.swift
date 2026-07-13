@@ -19,6 +19,28 @@ final class PDFKitTextExtractorTests: XCTestCase {
             XCTAssertEqual(error as? DocumentImportError, .emptyExtractedText)
         }
     }
+
+    func testExtractTextRejectsPDFAbovePageLimit() throws {
+        let url = try MinimalPDFFixture.writePDF(text: "Hello PDF world!")
+        let extractor = PDFKitTextExtractor(
+            limits: ReaderResourceLimits(maxPDFPages: 0)
+        )
+
+        XCTAssertThrowsError(try extractor.extractText(from: url)) { error in
+            XCTAssertEqual(error as? DocumentImportError, .resourceLimitExceeded)
+        }
+    }
+
+    func testExtractTextRejectsPDFAboveDecodedTextLimit() throws {
+        let url = try MinimalPDFFixture.writePDF(text: "Hello PDF world!")
+        let extractor = PDFKitTextExtractor(
+            limits: ReaderResourceLimits(maxExtractedCharacters: 4)
+        )
+
+        XCTAssertThrowsError(try extractor.extractText(from: url)) { error in
+            XCTAssertEqual(error as? DocumentImportError, .resourceLimitExceeded)
+        }
+    }
 }
 
 private enum MinimalPDFFixture {
