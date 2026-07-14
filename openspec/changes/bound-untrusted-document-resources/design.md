@@ -13,7 +13,8 @@ in tests. `DocumentImportError.resourceLimitExceeded` is the common rejection
 surface.
 
 - `EPUBTextExtractor` creates one mutable budget and passes it through container,
-  package, and chapter reads.
+  package, and chapter reads. Its XHTML delegate also limits text callbacks
+  before normalizing or retaining each segment.
 - `PDFKitTextExtractor` checks page count and cumulative decoded characters.
 - `DocumentImportService` checks final normalized character and token budgets.
 - `RSVPTextProcessor` rejects excessive input, token count, and token length

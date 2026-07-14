@@ -30,6 +30,7 @@ struct ReaderResourceLimits: Equatable {
     let maxEPUBResourceBytes: Int
     let maxEPUBTotalBytes: Int
     let maxEPUBSpineItems: Int
+    let maxEPUBTextSegments: Int
     let maxPDFPages: Int
     let maxExtractedCharacters: Int
     let maxTokenCount: Int
@@ -41,6 +42,7 @@ struct ReaderResourceLimits: Equatable {
         maxEPUBResourceBytes: Int = 8 * 1_024 * 1_024,
         maxEPUBTotalBytes: Int = 32 * 1_024 * 1_024,
         maxEPUBSpineItems: Int = 2_048,
+        maxEPUBTextSegments: Int = 50_000,
         maxPDFPages: Int = 2_000,
         maxExtractedCharacters: Int = 8_000_000,
         maxTokenCount: Int = 250_000,
@@ -51,6 +53,7 @@ struct ReaderResourceLimits: Equatable {
         self.maxEPUBResourceBytes = max(0, maxEPUBResourceBytes)
         self.maxEPUBTotalBytes = max(0, maxEPUBTotalBytes)
         self.maxEPUBSpineItems = max(0, maxEPUBSpineItems)
+        self.maxEPUBTextSegments = max(0, maxEPUBTextSegments)
         self.maxPDFPages = max(0, maxPDFPages)
         self.maxExtractedCharacters = max(0, maxExtractedCharacters)
         self.maxTokenCount = max(0, maxTokenCount)

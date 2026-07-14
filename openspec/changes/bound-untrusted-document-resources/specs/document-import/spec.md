@@ -19,6 +19,14 @@ resource set, decoded output, page set, or token set exceeds configured limits.
 - **WHEN** Reader imports the EPUB
 - **THEN** import fails before reading the complete file
 
+#### Scenario: Excessively segmented EPUB XHTML
+
+- **GIVEN** an EPUB chapter below byte and character limits whose text is split
+  across more XML text callbacks than policy permits
+- **WHEN** Reader imports the EPUB
+- **THEN** import fails with `resourceLimitExceeded` before retaining every text
+  segment
+
 #### Scenario: Excessive PDF pages
 
 - **GIVEN** a valid PDF whose page count exceeds policy

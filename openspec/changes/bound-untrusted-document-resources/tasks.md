@@ -19,3 +19,9 @@
 - [x] 3.2 Run `swift test`
 - [x] 3.3 Run simulator test suite
 - [x] 3.4 Re-run security review against the patched tree
+
+## 4. Segmented XHTML follow-up
+
+- [x] 4.1 Add RED regression for excessive XHTML text segmentation
+- [x] 4.2 Enforce a configurable XHTML text-segment limit
+- [ ] 4.3 Re-run focused, package, simulator, and security checks

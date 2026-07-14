@@ -89,6 +89,19 @@ final class EPUBTextExtractorTests: XCTestCase {
         }
     }
 
+    func testExtractTextRejectsExcessivelySegmentedXHTML() throws {
+        let segmentedText = String(repeating: "<i>a</i>", count: 60_000)
+        let url = try EPUBFixture.writeEPUBDirectory(
+            spine: ["chapter1"],
+            manifest: ["chapter1": "chapter1.xhtml"],
+            files: ["chapter1.xhtml": "<html><body>\(segmentedText)</body></html>"]
+        )
+
+        XCTAssertThrowsError(try EPUBTextExtractor().extractText(from: url)) {
+            XCTAssertEqual($0 as? DocumentImportError, .resourceLimitExceeded)
+        }
+    }
+
     func testExtractTextRejectsOversizedArchiveResource() throws {
         let url = try EPUBFixture.writeEPUB(
             spine: ["chapter1"],

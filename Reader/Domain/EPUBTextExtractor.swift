@@ -332,6 +332,7 @@ private final class XHTMLTextDelegate: NSObject, ResourceLimitedXMLDelegate {
     private let limits: ReaderResourceLimits
     private var parts: [String] = []
     private var characterCount = 0
+    private var textSegmentCount = 0
     private(set) var didExceedResourceLimit = false
 
     init(limits: ReaderResourceLimits) {
@@ -343,11 +344,13 @@ private final class XHTMLTextDelegate: NSObject, ResourceLimitedXMLDelegate {
     }
 
     func parser(_ parser: XMLParser, foundCharacters string: String) {
-        guard string.count <= limits.maxExtractedCharacters - characterCount else {
+        guard textSegmentCount < limits.maxEPUBTextSegments,
+              string.count <= limits.maxExtractedCharacters - characterCount else {
             didExceedResourceLimit = true
             parser.abortParsing()
             return
         }
+        textSegmentCount += 1
         characterCount += string.count
         let normalized = DocumentImportService.normalizeText(string)
         if !normalized.isEmpty {
