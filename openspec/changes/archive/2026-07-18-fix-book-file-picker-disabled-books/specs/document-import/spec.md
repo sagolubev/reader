@@ -19,3 +19,8 @@ duration of import.
 - **WHEN** EPUB parsing fails
 - **THEN** the system shows an import error, creates no library book, and keeps
   the active book unchanged
+
+#### Scenario: Apple Books package
+- **WHEN** the user selects a directory-package EPUB exported by Apple Books
+- **THEN** the system resolves its container and spine resources using the same
+  import behavior as a ZIP-based EPUB
