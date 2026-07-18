@@ -1,7 +1,8 @@
 # reader-bookmarks Specification
 
 ## Purpose
-TBD - created by archiving change reader-library-bookmarks. Update Purpose after archive.
+Define creation, display, navigation, deletion, and per-book isolation of saved
+reading positions.
 ## Requirements
 ### Requirement: Bookmark current position
 The system SHALL allow users to bookmark the current word position for the
@@ -46,3 +47,10 @@ The system SHALL keep bookmarks scoped to their owning book.
 - **THEN** the bookmark button and bookmark list reflect only the newly active
   book's bookmarks
 
+### Requirement: Delete bookmark
+The system SHALL allow users to remove a bookmark from the bookmark list.
+
+#### Scenario: Delete with list action
+- **WHEN** the user deletes a bookmark with a swipe or long-press action
+- **THEN** that bookmark is removed while the owning book and its other
+  bookmarks remain unchanged

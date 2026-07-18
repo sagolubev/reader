@@ -1,7 +1,8 @@
 # rsvp-playback Specification
 
 ## Purpose
-TBD - created by archiving change ios-rsvp-reader. Update Purpose after archive.
+Define tokenization, ORP rendering, playback timing, navigation, and reading
+progress behavior.
 ## Requirements
 ### Requirement: Text tokenization
 The system SHALL parse reading text into an ordered array of non-empty word tokens by trimming leading/trailing whitespace and splitting on one or more Unicode whitespace characters.
@@ -103,4 +104,3 @@ The system SHALL expose progress as a percentage of current word index over tota
 #### Scenario: Time remaining
 - **WHEN** 300 words remain at 300 WPM
 - **THEN** the displayed remaining time is `1:00`
-

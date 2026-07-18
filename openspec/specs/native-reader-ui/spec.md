@@ -1,12 +1,13 @@
 # native-reader-ui Specification
 
 ## Purpose
-TBD - created by archiving change ios-rsvp-reader. Update Purpose after archive.
+Define the native reader surface, themes, controls, navigation, accessibility,
+and lifecycle behavior.
 ## Requirements
 ### Requirement: Main reader surface
-The system SHALL present a dark SwiftUI reader surface with a centered word
-display, red ORP highlight, red center marker, progress, playback controls,
-library navigation, and bookmark controls.
+The system SHALL present a SwiftUI reader surface with warm light and dark
+themes, a centered word display, red ORP highlight, red center marker, progress,
+playback controls, library navigation, and bookmark controls.
 
 #### Scenario: Initial reader screen
 - **WHEN** the app launches without an open book
@@ -17,6 +18,11 @@ library navigation, and bookmark controls.
 - **WHEN** displayed words change during playback
 - **THEN** the highlighted ORP character remains aligned to the center marker
   without layout shift
+
+#### Scenario: Switch theme
+- **WHEN** the user toggles the theme control
+- **THEN** the reader switches between warm light and dark themes and persists
+  the selected mode
 
 ### Requirement: Focus mode
 The system SHALL enter focus mode while playing or paused and hide nonessential header controls.
@@ -101,4 +107,3 @@ The system SHALL expose bookmark controls on the reader surface.
 #### Scenario: Open bookmarks from reader
 - **WHEN** a book is open and the user opens the bookmarks list
 - **THEN** the system presents bookmarks for the active book
-

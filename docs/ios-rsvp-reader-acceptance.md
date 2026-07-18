@@ -11,6 +11,8 @@ workflow of `thomaskolmans/rsvp-reading`:
 - control playback, speed, pauses, progress, jump, and focus mode;
 - save and resume progress per book;
 - add and revisit per-book bookmarks;
+- delete bookmarks with swipe or long-press actions;
+- switch between persisted warm light and dark themes;
 - handle iOS lifecycle, Reduce Motion, and accessibility labels.
 
 ## Implemented Capabilities
@@ -23,6 +25,8 @@ workflow of `thomaskolmans/rsvp-reading`:
 - PDF and EPUB import are handled through
   `Reader/Domain/DocumentImportService.swift`, `PDFKitTextExtractor.swift`, and
   `EPUBTextExtractor.swift`.
+- Import safety limits cover document and EPUB resource bytes, PDF page count,
+  EPUB spine and text-segment counts, extracted characters, and parsed tokens.
 - Local books and bookmarks are stored through `BookLibraryStore`,
   `StoredBookRecord`, and `StoredBookmarkRecord`.
 - SwiftUI reader UI, loading, settings, jump, controls, RSVP display, and resume
@@ -35,13 +39,15 @@ workflow of `thomaskolmans/rsvp-reading`:
 ## Supported Formats
 
 - Text-based PDFs readable by PDFKit.
-- Standard EPUB files with readable OPF spine XHTML content.
+- Standard ZIP-based EPUB files and Apple Books directory packages with readable
+  OPF spine XHTML content.
 - Multiple local books with independent progress, settings, and bookmarks.
 
 ## Known Limitations
 
 - Scanned or image-only PDFs are not OCR-processed.
 - Encrypted, malformed, or unusual EPUB packages may fail parsing.
+- Documents exceeding import safety limits are rejected.
 - Pasted-text loading is not exposed in the current add-book flow.
 - There are no folders, tags, search, annotations, table of contents UI, or cloud
   sync in the first library release.
@@ -90,7 +96,10 @@ xcodebuild -scheme Reader \
 - Change WPM and pause settings during a session.
 - Jump by word number and percentage.
 - Toggle a bookmark, open the bookmark list, and jump back to the bookmark.
+- Delete a bookmark by swipe and long press.
+- Switch between warm light and dark themes, relaunch, and confirm the selection
+  persists.
 - Close, reopen, and confirm the last book resumes at its saved position.
 - Confirm the RSVP word display does not overlap controls on iPhone-sized
   screens.
-- Confirm progress text remains readable in dark mode.
+- Confirm progress text remains readable in both themes.

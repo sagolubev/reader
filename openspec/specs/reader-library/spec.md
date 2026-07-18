@@ -1,7 +1,8 @@
 # reader-library Specification
 
 ## Purpose
-TBD - created by archiving change reader-library-bookmarks. Update Purpose after archive.
+Define local multi-book persistence, selection, progress preservation, and
+deletion behavior.
 ## Requirements
 ### Requirement: Local book library
 The system SHALL persist multiple imported books locally and expose them as a

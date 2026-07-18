@@ -1,21 +1,9 @@
 # document-import Specification
 
 ## Purpose
-TBD - created by archiving change ios-rsvp-reader. Update Purpose after archive.
+Define safe PDF and EPUB selection, extraction, normalization, validation, and
+library-import behavior.
 ## Requirements
-### Requirement: Pasted text import
-The system SHALL allow users to paste or type text and load it as a persisted
-library book that becomes the active reading book.
-
-#### Scenario: Load pasted text
-- **WHEN** the user enters non-empty text and confirms loading
-- **THEN** the text is normalized, saved as a new library book, opened in the
-  reader, and word parsing runs on it
-
-#### Scenario: Reject blank pasted text
-- **WHEN** the user attempts to load blank text
-- **THEN** no library book is created and the active book is not replaced
-
 ### Requirement: PDF import
 The system SHALL allow users to import text-based PDF files from the iOS
 document picker, extract readable text with PDFKit, persist the result as a
@@ -46,6 +34,11 @@ open it.
 - **THEN** the system shows an import error, creates no library book, and keeps
   the active book unchanged
 
+#### Scenario: Apple Books package
+- **WHEN** the user selects a directory-package EPUB exported by Apple Books
+- **THEN** the system resolves its container and spine resources using the same
+  import behavior as a ZIP-based EPUB
+
 ### Requirement: Text normalization
 The system SHALL normalize imported document text by collapsing whitespace, trimming edges, and reducing repeated sentence punctuation.
 
@@ -64,3 +57,12 @@ The system SHALL show loading and error states during file import.
 - **WHEN** the selected file type is not PDF or EPUB
 - **THEN** the system rejects it with a visible unsupported-type error
 
+### Requirement: Bounded document processing
+The system SHALL reject documents that exceed configured byte, page, EPUB
+resource, spine, XML text-segment, extracted-character, token-count, or
+per-token limits.
+
+#### Scenario: Resource limit exceeded
+- **WHEN** an imported document exceeds any configured processing limit
+- **THEN** the system shows a safe import error, creates no library book, and
+  keeps the active book unchanged

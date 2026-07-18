@@ -1,7 +1,8 @@
 # reader-session-persistence Specification
 
 ## Purpose
-TBD - created by archiving change ios-rsvp-reader. Update Purpose after archive.
+Define per-book progress and settings persistence, launch restoration, and
+legacy-session migration.
 ## Requirements
 ### Requirement: Save session
 The system SHALL save progress and reader settings for each persisted library
@@ -43,4 +44,3 @@ playback timing and display after reopening that book.
 - **WHEN** a book saved at 450 WPM with punctuation pauses disabled is reopened
 - **THEN** the reader uses 450 WPM and punctuation pauses remain disabled for
   that book
-
