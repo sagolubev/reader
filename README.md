@@ -8,6 +8,7 @@
 ![Swift 6](https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white)
 ![SwiftUI](https://img.shields.io/badge/UI-SwiftUI-0D96F6?logo=swift&logoColor=white)
 ![iOS 17+](https://img.shields.io/badge/iOS-17%2B-111111?logo=apple&logoColor=white)
+![MIT License](https://img.shields.io/badge/license-MIT-green)
 
 <br>
 
@@ -133,3 +134,7 @@ xcodebuild -scheme Reader \
 
 Reader does not currently include OCR, annotations, folders, tags, library
 search, table-of-contents navigation, cloud sync, or App Store release metadata.
+
+## License
+
+Reader is available under the [MIT License](LICENSE).

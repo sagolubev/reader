@@ -29,7 +29,7 @@ Building this as native SwiftUI avoids the file access, persistence, accessibili
 
 ## Impact
 
-- New iOS application project under `.`.
+- New iOS application project in this repository.
 - New SwiftUI, SwiftData, PDFKit, XCTest, and XCUITest code.
 - Possible Swift Package Manager dependency for EPUB parsing after evaluation.
 - OpenSpec artifacts, task tracking with `br`, and TDD implementation workflow.

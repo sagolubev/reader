@@ -14,6 +14,7 @@ final class DocumentationSourceTests: XCTestCase {
             "Save and resume",
             "Safety Limits",
             "Architecture",
+            "MIT License",
             "swift test",
             "xcodebuild -scheme Reader",
             "-parallel-testing-enabled NO",
